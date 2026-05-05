@@ -152,6 +152,8 @@ lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
 
 `POST /ocr/analyze` returns the full Codex artifact: page Markdown, page metadata, layout regions, segmented assets, annotations, LiteParse conversion results, model metadata, and provenance. The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper.
 
+For Docker or headless runs, set `LITEPARSE_CODEX_HOME` to a mounted Codex home with `auth.json`/`config.toml`, or provide a Codex `model_provider` in that `config.toml`. Current official Codex config documents custom providers with `wire_api = "responses"`, so OpenAI Chat Completions-compatible local endpoints should be fronted by a Responses/Open Responses adapter before being selected as the Codex provider.
+
 Advanced Codex artifacts can be generated without `lit parse`:
 
 ```bash

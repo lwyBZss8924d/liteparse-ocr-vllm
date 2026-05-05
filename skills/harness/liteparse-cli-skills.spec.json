@@ -73,7 +73,9 @@
     "codex_bboxes_are_model_inferred",
     "$HOME/.codex-test",
     "final/document.md",
-    "final/document.json"
+    "final/document.json",
+    "model_provider",
+    "wire_api = \"responses\""
   ],
   "docs": {
     "required_files": [
@@ -82,10 +84,16 @@
       "README.md",
       "cli/README.md",
       "ocr/README.md",
+      "ocr/glmocr/README.md",
       "src/engines/ocr/README.md",
       "docs/src/content/docs/liteparse/cli-reference.md",
       "docs/src/content/docs/liteparse/guides/ocr.md",
-      ".github/workflows/ci.yml"
+      ".github/workflows/ci.yml",
+      "Dockerfile.glmocr-offline",
+      "docker/glmocr-offline/entrypoint.sh",
+      "docker/codex-ocr-server/README.md",
+      "docker/codex-ocr-server/config.local-open-responses.example.toml",
+      "scripts/smoke-offline-npm-tgz.mjs"
     ],
     "required_terms": {
       "AGENTS.md": [
@@ -98,6 +106,9 @@
         "npm run validate:agent-skills:source",
         "npm run validate:agent-skills",
         "npm run sync:agent-skills:dry-run",
+        "npm run smoke:offline-npm-tgz",
+        "Do not describe the GLM-OCR SDK dependency path as GPU-only",
+        "wire_api = \"responses\"",
         "Dockerfile.glmocr-offline"
       ],
       "OCR_API_SPEC.md": [
@@ -106,31 +117,44 @@
         "results[].text",
         "results[].bbox",
         "results[].confidence",
-        "codex_bboxes_are_model_inferred"
+        "codex_bboxes_are_model_inferred",
+        "default Docker OCR profile starts `codex-ocr-server`"
       ],
       "README.md": [
         "glmocr-pipeline",
         "codex-ocr-pipeline",
         "final/document.md",
         "final/document.json",
-        "LITEPARSE_CODEX_HOME"
+        "LITEPARSE_CODEX_HOME",
+        "GLM-OCR SDK pipeline itself can run without this image",
+        "default Docker profile is `codex`",
+        "wire_api = \"responses\"",
+        "smoke:offline-npm-tgz"
       ],
       "cli/README.md": [
         "lit codex-ocr-server",
         "lit codex-ocr-pipeline",
         "lit glmocr-pipeline",
         "lit lmstudio-openai-adapter",
-        "POST /ocr/analyze"
+        "POST /ocr/analyze",
+        "wire_api = \"responses\""
       ],
       "ocr/README.md": [
         "POST /ocr/analyze",
         "LITEPARSE_CODEX_HOME",
+        "SDK/`uv run server.py` path is not GPU-only",
+        "Docker defaults to the `codex` OCR profile",
         "$HOME/.codex-test"
+      ],
+      "ocr/glmocr/README.md": [
+        "Optional vLLM offline Docker runtime",
+        "can run through `uv run server.py` without this Docker image"
       ],
       "src/engines/ocr/README.md": [
         "POST /ocr/analyze",
         "codex_bboxes_are_model_inferred",
-        "--strict-bbox"
+        "--strict-bbox",
+        "wire_api = \"responses\""
       ],
       "docs/src/content/docs/liteparse/cli-reference.md": [
         "lit codex-ocr-pipeline",
@@ -141,12 +165,41 @@
         "lit codex-ocr-pipeline",
         "final/document.md",
         "final/document.json",
-        "codex_bboxes_are_model_inferred"
+        "codex_bboxes_are_model_inferred",
+        "wire_api = \"responses\""
       ],
       ".github/workflows/ci.yml": [
         "custom/vllm-ocr-main",
         "validate:agent-skills:source",
-        "Dockerfile.glmocr-offline"
+        "Dockerfile.glmocr-offline",
+        "smoke:offline-npm-tgz"
+      ],
+      "Dockerfile.glmocr-offline": [
+        "LITEPARSE_OCR_PROFILE=codex",
+        "LITEPARSE_CODEX_HOME=/codex-home"
+      ],
+      "docker/glmocr-offline/entrypoint.sh": [
+        "codex-ocr-server",
+        "LITEPARSE_CODEX_OCR_BACKEND",
+        "LITEPARSE_CODEX_OCR_STRICT_BBOX"
+      ],
+      "docker/codex-ocr-server/README.md": [
+        "codex-ocr-server",
+        "LITEPARSE_CODEX_HOME",
+        "model_provider",
+        "wire_api = \"responses\"",
+        "Open Responses"
+      ],
+      "docker/codex-ocr-server/config.local-open-responses.example.toml": [
+        "#:schema https://developers.openai.com/codex/config-schema.json",
+        "model_provider = \"local-open-responses\"",
+        "wire_api = \"responses\""
+      ],
+      "scripts/smoke-offline-npm-tgz.mjs": [
+        "--network=none",
+        "node:24-trixie-slim",
+        "LITEPARSE_OFFLINE_TGZ_CONTAINER_PACK",
+        "Hello LiteParse"
       ]
     }
   },

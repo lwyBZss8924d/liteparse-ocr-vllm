@@ -38,6 +38,7 @@ screenshots/
 !tests/fixtures/*.pdf
 
 # Temporary files
+.tmp/
 tmp/
 temp/
 *.txt

@@ -97,6 +97,8 @@ This server follows `OCR_API_SPEC.md`: multipart `file`, optional `language`, an
 
 The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper. For live development and tests, pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME`.
 
+For Docker or headless runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Official Codex config currently documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.
+
 ---
 
 ### `lit codex-ocr-pipeline -p <path> -o <output_dir>`

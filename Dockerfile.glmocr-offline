@@ -28,13 +28,18 @@ ARG PP_DOCLAYOUT_MODEL_REVISION=3ec586e86ed9245a567bb13395a3db64d5c077cc
 ENV HF_HOME=/opt/hf \
     HF_HUB_OFFLINE=1 \
     TRANSFORMERS_OFFLINE=1 \
+    CODEX_HOME=/codex-home \
+    LITEPARSE_CODEX_HOME=/codex-home \
+    LITEPARSE_CODEX_OCR_PORT=8833 \
+    LITEPARSE_CODEX_OCR_MODEL=gpt-5.5 \
+    LITEPARSE_CODEX_OCR_REASONING=medium \
     LITEPARSE_GLMOCR_ROOT=/opt/glm-ocr-sdk \
     LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR=/opt/models/pp-doclayout \
     LITEPARSE_GLMOCR_PYTHON=/opt/liteparse-glmocr-venv/bin/python \
     LITEPARSE_GLMOCR_MODEL=glm-ocr \
     LITEPARSE_GLMOCR_PORT=8831 \
     LITEPARSE_VLLM_PORT=8000 \
-    LITEPARSE_OCR_PROFILE=glmocr-vllm
+    LITEPARSE_OCR_PROFILE=codex
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -95,6 +100,7 @@ PY
 COPY docker/glmocr-offline/entrypoint.sh /usr/local/bin/glmocr-offline-entrypoint
 COPY docker/glmocr-offline/offline-smoke.sh /usr/local/bin/glmocr-offline-smoke
 RUN chmod +x /usr/local/bin/glmocr-offline-entrypoint /usr/local/bin/glmocr-offline-smoke
+RUN mkdir -p /codex-home && chmod 700 /codex-home
 
 EXPOSE 8000 8831 8833
 ENTRYPOINT ["/usr/local/bin/glmocr-offline-entrypoint"]

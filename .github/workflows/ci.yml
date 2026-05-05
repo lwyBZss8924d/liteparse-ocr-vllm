@@ -62,6 +62,31 @@ jobs:
       - name: Run tests
         run: npm run test
 
+  offline-npm-tgz-smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Prune dev dependencies
+        run: npm prune --omit=dev
+
+      - name: Smoke offline npm tgz install
+        run: npm run smoke:offline-npm-tgz
+
   # test that docker builds
   build-docker-image:
     runs-on: ubuntu-latest

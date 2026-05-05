@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ "${1:-}" == "bash" || "${1:-}" == "sh" || "${1:-}" == "lit" || "${1:-}" == "liteparse" ]]; then
+if [[ "${1:-}" == "bash" || "${1:-}" == "sh" || "${1:-}" == "lit" || "${1:-}" == "liteparse" || "${1:-}" == "codex" ]]; then
   exec "$@"
 fi
 
@@ -67,11 +67,23 @@ case "${profile}" in
       "$@"
     ;;
   codex)
-    exec lit codex-ocr-server \
+    codex_args=(
+      lit codex-ocr-server
+      --backend "${LITEPARSE_CODEX_OCR_BACKEND:-sdk}"
       --host 0.0.0.0 \
       --port "${LITEPARSE_CODEX_OCR_PORT:-8833}" \
-      --codex-home "${LITEPARSE_CODEX_HOME:-/codex-home}" \
-      "$@"
+      --codex-home "${LITEPARSE_CODEX_HOME:-${CODEX_HOME:-/codex-home}}" \
+      --model "${LITEPARSE_CODEX_OCR_MODEL:-gpt-5.5}" \
+      --reasoning-effort "${LITEPARSE_CODEX_OCR_REASONING:-medium}" \
+      --timeout-ms "${LITEPARSE_CODEX_OCR_TIMEOUT_MS:-300000}"
+    )
+    if [[ "${LITEPARSE_CODEX_OCR_INCLUDE_RAW:-}" == "1" || "${LITEPARSE_CODEX_OCR_INCLUDE_RAW:-}" == "true" ]]; then
+      codex_args+=(--include-raw)
+    fi
+    if [[ "${LITEPARSE_CODEX_OCR_STRICT_BBOX:-}" == "1" || "${LITEPARSE_CODEX_OCR_STRICT_BBOX:-}" == "true" ]]; then
+      codex_args+=(--strict-bbox)
+    fi
+    exec "${codex_args[@]}" "$@"
     ;;
   smoke)
     exec /usr/local/bin/glmocr-offline-smoke "$@"

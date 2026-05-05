@@ -43,7 +43,7 @@ Python service and CLI wrapper backed by the official GLM-OCR SDK self-hosted pi
 - Uses PP-DocLayout for real layout `bbox_2d`, then calls LM Studio/vLLM/SGLang/Ollama for crop OCR
 - Python dependencies are declared in `ocr/glmocr/pyproject.toml` and managed with `uv run server.py`, matching the EasyOCR and PaddleOCR adapters
 - Auto-loads the local LM Studio model with `lms load` when LM Studio is the model runtime
-- The release image target `Dockerfile.glmocr-offline` bundles the pinned GLM-OCR SDK, vLLM runtime, GLM-OCR model, and PP-DocLayout model for offline GPU hosts
+- The SDK/`uv run server.py` path is not GPU-only; the release image target `Dockerfile.glmocr-offline` is an optional vLLM serving package for offline hosts where a GPU is expected for practical model inference
 
 ### [lmstudio/](./lmstudio/)
 Node server exposed by the LiteParse CLI and backed by LM Studio `glm-ocr`.
@@ -60,6 +60,7 @@ Node server exposed by the LiteParse CLI and backed by OpenAI Codex multimodal p
 - Exposes `POST /ocr/analyze` for the full advanced artifact: Markdown, page metadata, layout regions, segmented assets, annotations, conversion results, model metadata, and provenance
 - Uses `@openai/codex-sdk` by default and supports an experimental `codex app-server` backend with `--backend app-server`
 - Live development/test runs should pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME=$HOME/.codex-test`
+- Docker defaults to the `codex` OCR profile: mount `LITEPARSE_CODEX_HOME` with `auth.json`/`config.toml`, or provide a Codex `model_provider` config for a local/proxy Responses-compatible endpoint
 - Bounding boxes are model-inferred and reported with warnings; use `--strict-bbox` to drop regions without usable boxes
 
 ## Quick Start
@@ -80,8 +81,15 @@ uv run server.py
 # OR start the Node-managed GLM-OCR SDK pipeline wrapper from the LiteParse CLI
 lit glmocr-ocr-server
 
-# OR start the offline vLLM GLM-OCR image after docker load on a GPU host
+# OR start Docker's default Codex OCR server profile
+docker run --rm -p 8833:8833 \
+  -e LITEPARSE_CODEX_HOME=/codex-home \
+  -v "$HOME/.codex-test:/codex-home" \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+
+# OR start the optional offline vLLM GLM-OCR image after docker load on a GPU serving host
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
+  -e LITEPARSE_OCR_PROFILE=glmocr-vllm \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0
 
 # OR start the LM Studio direct wrapper

@@ -77,6 +77,8 @@ liteparse parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format
 
 The Codex server follows the same LiteParse `/ocr` contract as the other HTTP OCR servers. It also exposes `POST /ocr/analyze` for the full advanced artifact with page Markdown, `page_metadata`, `layout_regions`, segmented `assets`, `annotations`, conversion results, model metadata, and provenance. The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper. Live development and tests should pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME=$HOME/.codex-test` so OAuth tokens and config stay separate from normal Codex state.
 
+For Docker or headless runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.
+
 Run one image through Codex without starting the server:
 
 ```bash

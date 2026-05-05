@@ -1,0 +1,18 @@
+#:schema https://developers.openai.com/codex/config-schema.json
+
+# Example Codex home config for Dockerized LiteParse codex-ocr-server.
+# Place this at /codex-home/config.toml in the container, then run the image
+# with LITEPARSE_CODEX_HOME=/codex-home.
+
+model = "local-vision-model"
+model_provider = "local-open-responses"
+model_reasoning_effort = "medium"
+
+[model_providers.local-open-responses]
+name = "Local Open Responses provider"
+base_url = "http://host.docker.internal:1234/v1"
+wire_api = "responses"
+
+# If the provider requires a bearer token, uncomment env_key and pass the
+# matching environment variable to docker run.
+# env_key = "LOCAL_RESPONSES_API_KEY"

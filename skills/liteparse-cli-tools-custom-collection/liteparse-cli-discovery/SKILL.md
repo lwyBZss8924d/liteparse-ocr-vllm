@@ -120,6 +120,7 @@ Current workstation expectation:
 - `LITEPARSE_GLMOCR_OCR_API_URL` sets the model endpoint used by `ocr/glmocr/server.py`, usually LM Studio OpenAI-compatible `/v1/chat/completions` or the LiteParse `lmstudio-openai-adapter`.
 - `LITEPARSE_GLMOCR_LAYOUT_DEVICE=cpu` forces PP-DocLayout to run on CPU, useful on Apple Silicon.
 - `LITEPARSE_CODEX_HOME` sets the Codex state directory used by Codex OCR commands. Use `$HOME/.codex-test` for live development and evals so normal Codex state remains separate.
+- Docker Codex OCR runs must mount `LITEPARSE_CODEX_HOME` with auth/config, or provide a Codex `model_provider` config. Current official Codex config documents custom providers with `wire_api = "responses"`; wrap Chat Completions-only endpoints with a Responses/Open Responses adapter before selecting them as the Codex provider.
 - `LITEPARSE_CODEX_OCR_MODEL` sets the default Codex OCR model. Defaults to `gpt-5.5`; use a smaller model only for cheaper smoke tests.
 - `LITEPARSE_CODEX_OCR_REASONING` sets the default Codex OCR reasoning effort. Single-image/server commands default to `medium`; `codex-ocr-pipeline` defaults to `high`.
 

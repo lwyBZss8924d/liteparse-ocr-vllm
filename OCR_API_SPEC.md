@@ -178,6 +178,8 @@ If no reliable bounding boxes are available, a direct OCR wrapper may either ret
 
 Advanced servers may expose `POST /ocr/analyze` for the full artifact while keeping `POST /ocr` backward-compatible. The Codex OCR server returns a full artifact from `/ocr/analyze` with page Markdown, `page_metadata`, `layout_regions`, `assets`, `annotations`, `conversion.results`, model metadata, and provenance.
 
+Dockerized Codex OCR uses the same contract. The default Docker OCR profile starts `codex-ocr-server` on port `8833`; it requires `LITEPARSE_CODEX_HOME` with Codex auth/config or a custom Codex `model_provider` config for a local/proxy Responses-compatible endpoint.
+
 ## Testing Your Server
 
 Quick test:

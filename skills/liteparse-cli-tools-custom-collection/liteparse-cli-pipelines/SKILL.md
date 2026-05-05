@@ -195,6 +195,8 @@ curl -sS -X POST http://127.0.0.1:8833/ocr/analyze \
 
 The default backend is `@openai/codex-sdk`. Use `--backend app-server` only when explicitly testing the experimental `codex app-server` JSON-RPC wrapper. Use `--codex-home "$HOME/.codex-test"` or `LITEPARSE_CODEX_HOME=$HOME/.codex-test` for live development/evals so normal Codex state remains separate.
 
+For Docker or headless runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.
+
 ### 12. Codex OCR single-image and document artifacts
 
 Use a direct image/crop OCR call when you need a Codex page artifact without starting the server:

@@ -17,7 +17,7 @@ Keep `main` as an upstream mirror. Do not publish custom OCR releases from `main
 
 ## Project Overview
 
-**LiteParse OCR vLLM** keeps LiteParse's fast local PDF parsing and spatial text extraction, then layers custom OCR tooling for GLM-OCR SDK pipelines, vLLM offline packaging, LM Studio diagnostics, Codex OCR diagnostics, and repo-versioned agent skills. Baseline parsing and built-in OCR remain local by default; Codex OCR is online/authenticated diagnostics and must be documented as such.
+**LiteParse OCR vLLM** keeps LiteParse's fast local PDF parsing and spatial text extraction, then layers custom OCR tooling for GLM-OCR SDK pipelines, vLLM offline packaging, LM Studio diagnostics, Codex OCR diagnostics, and repo-versioned agent skills. Baseline parsing and built-in OCR remain local by default; Codex OCR is online/authenticated diagnostics and must be documented as such. Do not describe the GLM-OCR SDK dependency path as GPU-only; GPU applies to the optional vLLM release image/model-serving path, while local SDK development can run without that image.
 
 ### Key Capabilities
 - **Spatial text extraction** with precise bounding boxes
@@ -102,6 +102,8 @@ Codex OCR is implemented in `src/engines/ocr/codex.ts` and `src/engines/ocr/code
 ### 7. Custom Packaging and CI
 The custom npm package is `@arthur/liteparse-vllm`, not `@llamaindex/liteparse`. Build with `tsconfig.build.json` so test files are not emitted into `dist`, and prune dev dependencies before producing a release-grade Linux x64 offline tgz. The npm package should include Node CLI/runtime dependencies and OCR adapter source/docs; do not put GLM model weights, Python GPU wheels, `.venv`, local benchmarks, or model caches into npm.
 
+The Docker image uses `codex` as its default OCR profile and exposes `codex-ocr-server` on port `8833`; keep `glmocr-vllm` as an explicit GPU/vLLM profile. Docker docs must state that Codex OCR needs `LITEPARSE_CODEX_HOME` with auth/config, or a mounted Codex `config.toml` with a custom `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"` only; do not claim direct Chat Completions provider support unless the pinned Codex config schema documents it.
+
 CI must cover the custom branch as well as upstream mirror work. Keep `.github/workflows/ci.yml` aligned with the custom branch, and include source-level skill harness validation in CI. CI should not run `npm run sync:agent-skills`, because that writes user-level projections outside the repository; use source-only validation there.
 
 ## Common Tasks
@@ -179,6 +181,7 @@ Use focused automated checks for changed surfaces:
 - `npm run validate:agent-skills:source`
 - `npm run sync:agent-skills:dry-run`
 - `npm run validate:agent-skills`
+- `npm run smoke:offline-npm-tgz`
 - `python3 -m py_compile ocr/glmocr/server.py ocr/glmocr/test_server.py`
 - `uv run pytest test_server.py` from `ocr/glmocr/`
 - `bash -n docker/glmocr-offline/entrypoint.sh docker/glmocr-offline/offline-smoke.sh`
@@ -186,7 +189,7 @@ Use focused automated checks for changed surfaces:
 
 For release-grade offline npm tgz validation, build inside Linux x64, prune dev dependencies, pack, then install the tgz in `node:24-trixie-slim --network=none` and run `lit --version`, `liteparse --version`, and a `lit parse <small.pdf> --no-ocr --format json` smoke.
 
-Full vLLM offline image validation requires a Linux x64 NVIDIA GPU host. Do not claim the Docker image tar is release-validated from macOS/OrbStack or another non-GPU environment.
+Full vLLM offline image validation requires a Linux x64 NVIDIA GPU host. This does not apply to the local GLM-OCR SDK/uv development path, which can run without the vLLM image. Do not claim the Docker image tar is release-validated from macOS/OrbStack or another non-GPU environment.
 
 ## Key Dependencies
 

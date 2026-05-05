@@ -28,7 +28,7 @@ LiteParse OCR vLLM keeps LiteParse's local-first parser and standard OCR HTTP co
   - **Built-in**: Tesseract.js for the zero-setup local path
   - **Baseline HTTP Servers**: EasyOCR, PaddleOCR, or any custom `/ocr` service
   - **GLM-OCR SDK Pipeline**: PP-DocLayout-backed layout boxes normalized into LiteParse OCR results
-  - **vLLM Offline Image**: GPU Docker image tar target for air-gapped GLM-OCR delivery
+  - **vLLM Offline Image**: optional GPU-accelerated Docker image tar for air-gapped GLM-OCR model serving; the GLM-OCR SDK pipeline itself can run without this image
   - **LM Studio Direct Diagnostics**: lightweight local model smoke tests with degraded fallback boxes
   - **Codex OCR Diagnostics**: online/authenticated multimodal page-understanding artifacts
   - **Standard API**: unchanged multipart `POST /ocr` contract with `results[].text`, `results[].bbox`, and `results[].confidence`
@@ -84,6 +84,7 @@ npm ci
 npm run build
 npm prune --omit=dev
 npm pack --dry-run --json
+npm run smoke:offline-npm-tgz
 npm pack
 ```
 
@@ -424,9 +425,13 @@ lit glmocr-pipeline \
 
 Use `--no-auto-load` when you want LiteParse to fail fast instead of calling `lms load`. Use `--model-runtime openai-compatible --ocr-api-url <url>` or `--model-runtime ollama --ocr-api-url <url>` when the GLM-OCR model is hosted outside LM Studio.
 
-### Optional: Offline vLLM GLM-OCR Docker Image
+### Docker: Default Codex OCR Server and Optional vLLM GLM-OCR
 
-The custom fork includes a vLLM-only GPU image target for air-gapped delivery. The image contains the LiteParse custom CLI, Node runtime dependencies, the pinned GLM-OCR SDK, vLLM runtime, `zai-org/GLM-OCR`, and `PaddlePaddle/PP-DocLayoutV3_safetensors`.
+The GLM-OCR SDK development path does not require this Docker image and is not GPU-only: `cd ocr/glmocr && uv run server.py` can run with CPU layout detection and a local LM Studio or other OpenAI-compatible model runtime. The Docker target is an optional vLLM serving package for air-gapped deployment, where a Linux x64 NVIDIA GPU host is expected for practical GLM-OCR model inference.
+
+The image also contains `codex-ocr-server`, and the default Docker profile is `codex`. With no profile argument, the container starts a LiteParse-compatible OCR server on `0.0.0.0:8833` using `LITEPARSE_CODEX_HOME=/codex-home`. The mounted Codex home must provide either Codex auth/config or a custom `model_provider` config for a local/proxy model endpoint.
+
+The image contains the LiteParse custom CLI, Node runtime dependencies, `@openai/codex-sdk`, the pinned GLM-OCR SDK, vLLM runtime, `zai-org/GLM-OCR`, and `PaddlePaddle/PP-DocLayoutV3_safetensors`.
 
 ```bash
 docker build -f Dockerfile.glmocr-offline \
@@ -442,19 +447,52 @@ docker save \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0
 ```
 
-On the offline GPU host:
+On the deployment host:
 
 ```bash
 docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
 
+# Default profile: codex-ocr-server on :8833.
+docker run --rm -p 8833:8833 \
+  -e LITEPARSE_CODEX_HOME=/codex-home \
+  -v "$HOME/.codex-test:/codex-home" \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+
+# Optional vLLM GLM-OCR profile.
 docker run --rm --gpus all --ipc=host --network=none \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
 
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
+  -e LITEPARSE_OCR_PROFILE=glmocr-vllm \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0
 ```
 
-The default profile starts `vllm serve /opt/models/glm-ocr` on port `8000`, waits for `/v1/models`, then starts `lit glmocr-ocr-server` on port `8831` with `--layout-model-dir /opt/models/pp-doclayout`. The image sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` at runtime; build the image online once, then distribute the saved tar.
+The `codex` profile starts `lit codex-ocr-server` on port `8833`. The `glmocr-vllm` profile starts `vllm serve /opt/models/glm-ocr` on port `8000`, waits for `/v1/models`, then starts `lit glmocr-ocr-server` on port `8831` with `--layout-model-dir /opt/models/pp-doclayout`. The image sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` at runtime; build the image online once, then distribute the saved tar.
+
+Codex OCR deployment options:
+
+- Mount a trusted Codex home: `-v "$HOME/.codex-test:/codex-home" -e LITEPARSE_CODEX_HOME=/codex-home`. This may include `auth.json` from `codex login` and `config.toml`; treat `auth.json` as a secret.
+- Use a custom Codex model provider in `/codex-home/config.toml`, then set `model_provider` to that provider id. Codex custom providers define `base_url`, `wire_api`, auth, and optional headers under `[model_providers.<id>]`.
+- Current official Codex config schema documents `wire_api = "responses"` for custom providers. For an OpenAI Chat Completions-compatible local endpoint, put an adapter/proxy in front of it that exposes a Responses/Open Responses-compatible API before using it as the Codex provider, unless your pinned Codex version documents another supported `wire_api`.
+
+Example local Open Responses-compatible Codex config:
+
+```toml
+# /codex-home/config.toml
+#:schema https://developers.openai.com/codex/config-schema.json
+
+model = "local-vision-model"
+model_provider = "local-open-responses"
+model_reasoning_effort = "medium"
+
+[model_providers.local-open-responses]
+name = "Local Open Responses provider"
+base_url = "http://host.docker.internal:1234/v1"
+wire_api = "responses"
+# env_key = "LOCAL_RESPONSES_API_KEY"
+```
+
+References: [Codex custom model providers](https://developers.openai.com/codex/config-advanced#custom-model-providers), [Codex alternative provider auth](https://developers.openai.com/codex/auth#alternative-model-providers), [Codex config reference](https://developers.openai.com/codex/config-reference), [Codex config schema](https://developers.openai.com/codex/config-schema.json), [OpenAI Responses API](https://developers.openai.com/api/reference/responses/overview), and [AI SDK Open Responses provider](https://ai-sdk.dev/providers/ai-sdk-providers/open-responses).
 
 ### Optional: LM Studio GLM-OCR Direct Wrapper
 
