@@ -11,6 +11,7 @@
 - Set the offline Docker image default OCR profile to `codex-ocr-server` on port `8833`, with the GLM-OCR vLLM GPU profile kept as an explicit `glmocr-vllm` deployment mode.
 - Documented Docker Codex OCR deployment requirements: mount `LITEPARSE_CODEX_HOME` with Codex auth/config, or provide a Codex `model_provider` config for a local/proxy Responses-compatible provider.
 - Clarified that the GLM-OCR SDK/`uv run server.py` development path is not GPU-only; GPU applies to the optional vLLM image/model-serving path.
+- Added custom fork license and notice notes for LiteParse, the GLM-OCR model, and the PP-DocLayoutV3 layout component used by optional GLM-OCR deployments.
 - Synchronized the repo-versioned LiteParse skills source and harness projection contract so the installed runtime skills document the custom OCR, Docker, CI, and provider boundaries.
 
 # Upstream @llamaindex/liteparse History

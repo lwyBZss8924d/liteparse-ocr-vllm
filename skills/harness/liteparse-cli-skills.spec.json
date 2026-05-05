@@ -129,7 +129,11 @@
         "GLM-OCR SDK pipeline itself can run without this image",
         "default Docker profile is `codex`",
         "wire_api = \"responses\"",
-        "smoke:offline-npm-tgz"
+        "smoke:offline-npm-tgz",
+        "GLM-OCR model",
+        "MIT licensed",
+        "PP-DocLayoutV3",
+        "Apache-2.0"
       ],
       "cli/README.md": [
         "lit codex-ocr-server",

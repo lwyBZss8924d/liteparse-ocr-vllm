@@ -652,7 +652,15 @@ npm test
 
 ## License
 
-Apache 2.0
+This custom LiteParse fork and npm package are licensed under Apache-2.0 under this repository's [LICENSE](LICENSE).
+
+Third-party model and runtime notices for optional GLM-OCR deployments:
+
+- The GLM-OCR SDK repository code is Apache-2.0.
+- The GLM-OCR model [`zai-org/GLM-OCR`](https://huggingface.co/zai-org/GLM-OCR) is MIT licensed according to its model card.
+- The GLM-OCR pipeline uses PP-DocLayoutV3 for document layout analysis; the [`PaddlePaddle/PP-DocLayoutV3_safetensors`](https://huggingface.co/PaddlePaddle/PP-DocLayoutV3_safetensors) component is Apache-2.0 licensed according to the GLM-OCR model card.
+
+If you build or distribute the optional offline Docker image tar, retain the required notices for LiteParse, GLM-OCR, the GLM-OCR model, PP-DocLayoutV3, vLLM, Node runtime dependencies, and Python runtime dependencies included in that image.
 
 ## Credits
 
