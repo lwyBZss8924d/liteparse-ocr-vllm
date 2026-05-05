@@ -10,10 +10,10 @@ sidebar:
 Install LiteParse globally via npm to use the `lit` command anywhere:
 
 ```bash
-npm i -g @llamaindex/liteparse
+npm i -g @arthur/liteparse-vllm
 ```
 
-For macOS and Linux users, LiteParse can be also installed via `brew`:
+For macOS and Linux users who want the upstream package instead of this custom OCR fork, LiteParse can also be installed via `brew`:
 
 ```bash
 brew tap run-llama/liteparse

@@ -32,6 +32,7 @@ export interface GlmOcrRuntimeOptions {
   glmocrServerUrl?: string;
   layoutBatchSize?: number;
   layoutDevice?: string;
+  layoutModelDir?: string;
   lmstudioAdapterHost?: string;
   lmstudioAdapterPort?: number;
   lmstudioApiMode?: LmStudioGlmOcrApiMode;
@@ -48,6 +49,7 @@ export interface GlmOcrRuntimeConfigPlan {
   configPath?: string;
   generatedConfigYaml: string;
   glmocrRoot?: string;
+  layoutModelDir: string;
   model: string;
   ocrApiUrl: string;
   python: string;
@@ -189,11 +191,16 @@ export function buildGlmOcrRuntimeConfigPlan(
   const apiMode = modelRuntime === "ollama" ? "ollama_generate" : "openai";
   const python = options.glmocrPython ?? process.env.LITEPARSE_GLMOCR_PYTHON ?? "python3";
   const glmocrRoot = resolveGlmOcrRoot(options.glmocrRoot);
+  const layoutModelDir =
+    options.layoutModelDir ??
+    process.env.LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR ??
+    "PaddlePaddle/PP-DocLayoutV3_safetensors";
   const generatedConfigYaml = buildGlmOcrRuntimeConfigYaml({
     apiMode,
     host,
     layoutBatchSize: options.layoutBatchSize ?? 1,
     layoutDevice: options.layoutDevice,
+    layoutModelDir,
     maxWorkers: options.maxWorkers ?? 1,
     model,
     ocrApiUrl,
@@ -205,6 +212,7 @@ export function buildGlmOcrRuntimeConfigPlan(
     apiMode,
     generatedConfigYaml,
     glmocrRoot,
+    layoutModelDir,
     model,
     ocrApiUrl,
     python,
@@ -217,6 +225,7 @@ export function buildGlmOcrRuntimeConfigYaml(input: {
   host: string;
   layoutBatchSize: number;
   layoutDevice?: string;
+  layoutModelDir: string;
   maxWorkers: number;
   model: string;
   ocrApiUrl: string;
@@ -278,7 +287,7 @@ export function buildGlmOcrRuntimeConfigYaml(input: {
     "    enable_merge_text_blocks: true",
     "    enable_format_bullet_points: true",
     "  layout:",
-    "    model_dir: PaddlePaddle/PP-DocLayoutV3_safetensors",
+    `    model_dir: ${yamlString(input.layoutModelDir)}`,
     "    threshold: 0.3",
     `    batch_size: ${input.layoutBatchSize}`,
     "    workers: 1",
@@ -445,7 +454,7 @@ function resolveGlmOcrRoot(inputRoot?: string): string | undefined {
   const candidates = [
     inputRoot,
     process.env.LITEPARSE_GLMOCR_ROOT,
-    "/Users/arthur/dev-space/GLM-OCR",
+    "/opt/glm-ocr-sdk",
   ].filter((value): value is string => Boolean(value));
   return candidates.find((candidate) => existsSync(path.join(candidate, "glmocr", "__init__.py")));
 }

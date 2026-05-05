@@ -1,37 +1,41 @@
-# LiteParse
+# LiteParse OCR vLLM
 
-[![CI](https://github.com/run-llama/liteparse/actions/workflows/ci.yml/badge.svg)](https://github.com/run-llama/liteparse/actions/workflows/ci.yml)
-|
-[![npm version](https://img.shields.io/npm/v/@llamaindex/liteparse.svg)](https://www.npmjs.com/package/@llamaindex/liteparse)
+[![npm version](https://img.shields.io/npm/v/@arthur/liteparse-vllm.svg)](https://www.npmjs.com/package/@arthur/liteparse-vllm)
 |
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 |
-[Docs](https://developers.llamaindex.ai/liteparse/)
+[Upstream Docs](https://developers.llamaindex.ai/liteparse/)
 
-<img src="https://github.com/user-attachments/assets/07ba6a82-6bb1-4dea-b0ef-cad7df7d1622" alt="out" width="600">
+This repository is an independent custom OCR fork of upstream [run-llama/liteparse](https://github.com/run-llama/liteparse). The upstream project remains the base LiteParse implementation and source reference; this repo carries local custom work for GLM-OCR, vLLM offline packaging, LM Studio diagnostics, Codex OCR diagnostics, agent skills, and release packaging under a separate package name.
 
-LiteParse is a standalone OSS PDF parsing tool focused exclusively on **fast and light** parsing. It provides high-quality spatial text parsing with bounding boxes, without proprietary LLM features or cloud dependencies. Everything runs locally on your machine. 
+Repository identity:
 
-**Hitting the limits of local parsing?**
-For complex documents (dense tables, multi-column layouts, charts, handwritten text, or 
-scanned PDFs), you'll get significantly better results with [LlamaParse](https://developers.llamaindex.ai/python/cloud/llamaparse/?utm_source=github&utm_medium=liteparse), 
-our cloud-based document parser built for production document pipelines. LlamaParse handles the 
-hard stuff so your models see clean, structured data and markdown.
+- Fork repo: `https://github.com/lwyBZss8924d/liteparse-ocr-vllm.git`
+- Upstream repo: `https://github.com/run-llama/liteparse.git`
+- Custom branch: `custom/vllm-ocr-main`
+- Upstream mirror branch: `main`
+- npm package: `@arthur/liteparse-vllm`
+- Current custom version: `1.5.3-custom.0`, based on upstream `v1.5.3`
 
->  👉 [Sign up for LlamaParse free](https://cloud.llamaindex.ai?utm_source=github&utm_medium=liteparse)
+Do not publish custom OCR releases from `main`. Keep upstream syncs on `main`, merge them into `custom/vllm-ocr-main`, and publish this fork from the custom branch with custom tags such as `custom-v1.5.3-ocr.0`.
 
 ## Overview
 
+LiteParse OCR vLLM keeps LiteParse's local-first parser and standard OCR HTTP contract, then adds custom advanced OCR packaging for local VLM workflows.
+
 - **Fast Text Parsing**: Spatial text parsing using PDF.js
 - **Flexible OCR System**:
-  - **Built-in**: Tesseract.js (zero setup, works out of the box!)
-  - **HTTP Servers**: Plug in any OCR server (EasyOCR, PaddleOCR, custom)
-  - **LM Studio GLM-OCR**: Run `glm-ocr` locally through a LiteParse-compatible HTTP OCR server
-  - **Standard API**: Simple, well-defined OCR API specification
+  - **Built-in**: Tesseract.js for the zero-setup local path
+  - **Baseline HTTP Servers**: EasyOCR, PaddleOCR, or any custom `/ocr` service
+  - **GLM-OCR SDK Pipeline**: PP-DocLayout-backed layout boxes normalized into LiteParse OCR results
+  - **vLLM Offline Image**: GPU Docker image tar target for air-gapped GLM-OCR delivery
+  - **LM Studio Direct Diagnostics**: lightweight local model smoke tests with degraded fallback boxes
+  - **Codex OCR Diagnostics**: online/authenticated multimodal page-understanding artifacts
+  - **Standard API**: unchanged multipart `POST /ocr` contract with `results[].text`, `results[].bbox`, and `results[].confidence`
 - **Screenshot Generation**: Generate high-quality page screenshots for LLM agents
 - **Multiple Output Formats**: JSON and Text
 - **Bounding Boxes**: Precise text positioning information
-- **Standalone Binary**: No cloud dependencies, runs entirely locally
+- **Standalone CLI**: Baseline parsing runs locally; Codex OCR remains online/authenticated only
 - **Multi-platform**: Linux, macOS (Intel/ARM), Windows
 
 ## Installation
@@ -43,7 +47,7 @@ hard stuff so your models see clean, structured data and markdown.
 Install globally via npm to use the `lit` command anywhere:
 
 ```bash
-npm i -g @llamaindex/liteparse
+npm i -g @arthur/liteparse-vllm
 ```
 
 Then use it:
@@ -53,7 +57,7 @@ lit parse document.pdf
 lit screenshot document.pdf
 ```
 
-For macOS and Linux users, `liteparse` can be also installed via `brew`:
+For macOS and Linux users who want the upstream package instead of this custom OCR fork, `liteparse` can also be installed via `brew`:
 
 ```bash
 brew tap run-llama/liteparse
@@ -65,22 +69,32 @@ brew install llamaindex-liteparse
 You can clone the repo and install the CLI globally from source:
 
 ```
-git clone https://github.com/run-llama/liteparse.git
-cd liteparse
+git clone https://github.com/lwyBZss8924d/liteparse-ocr-vllm.git
+cd liteparse-ocr-vllm
+git switch custom/vllm-ocr-main
 npm run build
 npm pack
-npm install -g ./llamaindex-liteparse-*.tgz
+npm install -g ./arthur-liteparse-vllm-*.tgz
+```
+
+For a release-grade offline npm tarball, build on Linux x64 so native runtime dependencies match the target host:
+
+```bash
+npm ci --omit=dev
+npm run build
+npm pack --dry-run --json
+npm pack
 ```
 
 ### Agent Skill
 
-You can use `liteparse` as an agent skill, downloading it with the `skills` CLI tool:
+This fork keeps its custom agent skill source in the repository so OCR commands, package names, and vLLM/GLM-OCR workflows stay aligned with this custom build:
 
 ```bash
-npx skills add run-llama/llamaparse-agent-skills --skill liteparse
+skills/liteparse-cli-tools-custom-collection/
 ```
 
-Or copy-pasting the [`SKILL.md`](https://github.com/run-llama/llamaparse-agent-skills/blob/main/skills/liteparse/SKILL.md) file to your own skills setup.
+Use `npm run validate:agent-skills` before publishing changes, then `npm run sync:agent-skills:dry-run` and `npm run sync:agent-skills` to refresh the installed runtime projection under `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`. Do not edit the installed projection directly.
 
 ## Usage
 
@@ -142,13 +156,13 @@ lit screenshot document.pdf --target-pages "1-10" -o ./screenshots
 Install as a dependency in your project:
 
 ```bash
-npm install @llamaindex/liteparse
+npm install @arthur/liteparse-vllm
 # or
-pnpm add @llamaindex/liteparse
+pnpm add @arthur/liteparse-vllm
 ```
 
 ```typescript
-import { LiteParse } from '@llamaindex/liteparse';
+import { LiteParse } from '@arthur/liteparse-vllm';
 
 const parser = new LiteParse({ ocrEnabled: true });
 const result = await parser.parse('document.pdf');
@@ -160,7 +174,7 @@ console.log(result.text);
 You can pass raw bytes directly instead of a file path, which is useful for remote files:
 
 ```typescript
-import { LiteParse } from '@llamaindex/liteparse';
+import { LiteParse } from '@arthur/liteparse-vllm';
 import { readFile } from 'fs/promises';
 
 const parser = new LiteParse();
@@ -409,6 +423,38 @@ lit glmocr-pipeline \
 
 Use `--no-auto-load` when you want LiteParse to fail fast instead of calling `lms load`. Use `--model-runtime openai-compatible --ocr-api-url <url>` or `--model-runtime ollama --ocr-api-url <url>` when the GLM-OCR model is hosted outside LM Studio.
 
+### Optional: Offline vLLM GLM-OCR Docker Image
+
+The custom fork includes a vLLM-only GPU image target for air-gapped delivery. The image contains the LiteParse custom CLI, Node runtime dependencies, the pinned GLM-OCR SDK, vLLM runtime, `zai-org/GLM-OCR`, and `PaddlePaddle/PP-DocLayoutV3_safetensors`.
+
+```bash
+docker build -f Dockerfile.glmocr-offline \
+  -t liteparse-glmocr-vllm-offline:1.5.3-custom.0 \
+  --build-arg VLLM_BASE_IMAGE=vllm/vllm-openai@sha256:9eff9734a30b6713a8566217d36f8277630fd2d31cec7f0a0292835901a23aa4 \
+  --build-arg GLM_OCR_SDK_REF=cef4d0ea120d1741f5cefe8985eee45f6c8eff1d \
+  --build-arg GLM_OCR_MODEL_REVISION=cb34f33832c51008c86436a3b2217bbe4adbe0b8 \
+  --build-arg PP_DOCLAYOUT_MODEL_REVISION=3ec586e86ed9245a567bb13395a3db64d5c077cc \
+  .
+
+docker save \
+  -o liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+```
+
+On the offline GPU host:
+
+```bash
+docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+
+docker run --rm --gpus all --ipc=host --network=none \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+
+docker run --rm --gpus all --ipc=host -p 8831:8831 \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+```
+
+The default profile starts `vllm serve /opt/models/glm-ocr` on port `8000`, waits for `/v1/models`, then starts `lit glmocr-ocr-server` on port `8831` with `--layout-model-dir /opt/models/pp-doclayout`. The image sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` at runtime; build the image online once, then distribute the saved tar.
+
 ### Optional: LM Studio GLM-OCR Direct Wrapper
 
 The legacy direct wrapper remains available for quick single-image or OCR/text smoke tests:
@@ -500,6 +546,9 @@ choco install imagemagick.app # might require admin permissions
 | `LITEPARSE_GLM_OCR_MODEL` | LM Studio model identifier. Defaults to `glm-ocr-g32-mixed_4_8-mlx`. |
 | `LITEPARSE_LMSTUDIO_API_KEY` | Optional bearer token for LM Studio-compatible deployments. |
 | `LITEPARSE_LMSTUDIO_AUTO_LOAD` | Set to `0` or `false` to disable automatic `lms load` for local LM Studio models. |
+| `LITEPARSE_GLMOCR_ROOT` | GLM-OCR SDK root used by `lit glmocr-ocr-server`. Docker defaults to `/opt/glm-ocr-sdk`; local installs may omit it when `glmocr` is importable. |
+| `LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR` | PP-DocLayout model directory or Hub identifier. Docker defaults to `/opt/models/pp-doclayout`. |
+| `HF_HUB_OFFLINE` / `TRANSFORMERS_OFFLINE` | Set to `1` in the offline Docker image so Hugging Face and Transformers use only bundled model artifacts. |
 | `LITEPARSE_CODEX_HOME` | Codex state directory for Codex OCR. Use `$HOME/.codex-test` for live development/testing so OAuth tokens and config remain separate from normal Codex state. |
 | `LITEPARSE_CODEX_OCR_MODEL` | Default Codex OCR model. Defaults to `gpt-5.5`; use `gpt-5.4-mini` for cheaper smoke tests. |
 | `LITEPARSE_CODEX_OCR_REASONING` | Default Codex OCR reasoning effort. Defaults to `medium`; the pipeline command defaults to `high`. |

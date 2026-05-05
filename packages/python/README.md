@@ -15,7 +15,7 @@ LiteParse requires Node.js (>= 18). Install it from [nodejs.org](https://nodejs.
 ### Step 2: Install the LiteParse CLI
 
 ```bash
-npm install -g @llamaindex/liteparse
+npm install -g @arthur/liteparse-vllm
 ```
 
 ### Step 3: Install the Python package
@@ -25,7 +25,7 @@ pip install liteparse
 ```
 
 > **Note:** If you skip Step 2, the Python package will attempt to auto-install the CLI
-> via `npm install -g @llamaindex/liteparse` on first use (requires npm in your PATH).
+> via `npm install -g @arthur/liteparse-vllm` on first use (requires npm in your PATH).
 
 ## Quick Start
 

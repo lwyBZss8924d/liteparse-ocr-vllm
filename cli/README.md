@@ -60,6 +60,15 @@ Start the official GLM-OCR SDK self-hosted layout pipeline as a LiteParse-compat
 
 This server keeps the same `OCR_API_SPEC.md` contract but gets boxes from PP-DocLayout `bbox_2d` instead of direct model prompt output. LM Studio is the default model runtime and is auto-loaded with `lms load` unless `--no-auto-load` is passed.
 
+Portable and Docker runs should pass `--glmocr-root` only when the SDK is not importable from Python. Use `--layout-model-dir` or `LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR` to point PP-DocLayout at a pinned local model directory such as `/opt/models/pp-doclayout`.
+
+Offline vLLM image entrypoint:
+
+```bash
+docker run --rm --gpus all --ipc=host -p 8831:8831 \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+```
+
 ---
 
 ### `lit glmocr-pipeline -p <path> -o <output_dir>`

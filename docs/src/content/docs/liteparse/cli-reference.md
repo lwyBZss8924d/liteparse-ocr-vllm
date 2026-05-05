@@ -282,13 +282,14 @@ Important options:
 | Option | Description | Default |
 |--------|-------------|---------|
 | `--port <port>` | LiteParse OCR server port | `8831` |
-| `--glmocr-root <path>` | GLM-OCR source checkout root | `/Users/arthur/dev-space/GLM-OCR` |
+| `--glmocr-root <path>` | Optional GLM-OCR source checkout root. If omitted, LiteParse uses an importable `glmocr`, `LITEPARSE_GLMOCR_ROOT`, or `/opt/glm-ocr-sdk`. | — |
 | `--model-runtime <runtime>` | `lmstudio`, `openai-compatible`, `ollama`, or `external` | `lmstudio` |
 | `--base-url <url>` | LM Studio base URL | `http://localhost:1234` |
 | `--model <model>` | GLM-OCR model identifier | `glm-ocr-g32-mixed_4_8-mlx` |
 | `--lmstudio-api-mode <mode>` | `auto`, `openai`, or `native-adapter` | `auto` |
 | `--ocr-api-url <url>` | External model runtime URL | — |
 | `--layout-device <device>` | `cpu`, `cuda`, or `cuda:N` | `cpu` |
+| `--layout-model-dir <path>` | PP-DocLayout model directory or Hub identifier. Docker uses `/opt/models/pp-doclayout`. | `PaddlePaddle/PP-DocLayoutV3_safetensors` |
 | `--no-auto-load` | Disable automatic `lms load` | — |
 
 ## `lit glmocr-pipeline`

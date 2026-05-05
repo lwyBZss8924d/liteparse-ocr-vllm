@@ -34,6 +34,7 @@ interface CommonGlmOcrOptions {
   glmocrServerUrl?: string;
   layoutBatchSize?: string;
   layoutDevice?: string;
+  layoutModelDir?: string;
   lmstudioAdapterHost?: string;
   lmstudioAdapterPort?: string;
   lmstudioApiMode?: LmStudioGlmOcrApiMode;
@@ -129,15 +130,12 @@ export function registerGlmOcrCommands(program: Command): void {
       "Spawn python -m glmocr.server even when --glmocr-server-url is set"
     )
     .option("--glmocr-python <path>", "Python executable", "python3")
-    .option(
-      "--glmocr-root <path>",
-      "GLM-OCR source checkout root",
-      "/Users/arthur/dev-space/GLM-OCR"
-    )
+    .option("--glmocr-root <path>", "GLM-OCR source checkout root")
     .option("--glmocr-config <file>", "Use an existing GLM-OCR YAML config")
     .option("--glmocr-host <host>", "Spawned GLM-OCR SDK server host", "127.0.0.1")
     .option("--glmocr-port <port>", "Spawned GLM-OCR SDK server port", "5002")
     .option("--layout-device <device>", 'Layout model device: "cpu", "cuda", or "cuda:N"', "cpu")
+    .option("--layout-model-dir <path>", "PP-DocLayout model directory or Hub identifier")
     .option("--layout-batch-size <n>", "PPDocLayout batch size", "1")
     .option("--glmocr-max-workers <n>", "GLM-OCR region recognition workers", "1")
     .option("--lmstudio-adapter-host <host>", "OpenAI adapter host", "127.0.0.1")
@@ -186,15 +184,12 @@ export function registerGlmOcrCommands(program: Command): void {
       "Spawn python -m glmocr.server even when --glmocr-server-url is set"
     )
     .option("--glmocr-python <path>", "Python executable", "python3")
-    .option(
-      "--glmocr-root <path>",
-      "GLM-OCR source checkout root",
-      "/Users/arthur/dev-space/GLM-OCR"
-    )
+    .option("--glmocr-root <path>", "GLM-OCR source checkout root")
     .option("--glmocr-config <file>", "Use an existing GLM-OCR YAML config")
     .option("--glmocr-host <host>", "Spawned GLM-OCR SDK server host", "127.0.0.1")
     .option("--glmocr-port <port>", "Spawned GLM-OCR SDK server port", "5002")
     .option("--layout-device <device>", 'Layout model device: "cpu", "cuda", or "cuda:N"', "cpu")
+    .option("--layout-model-dir <path>", "PP-DocLayout model directory or Hub identifier")
     .option("--layout-batch-size <n>", "PPDocLayout batch size", "1")
     .option("--glmocr-max-workers <n>", "GLM-OCR region recognition workers", "1")
     .option("--lmstudio-adapter-host <host>", "OpenAI adapter host", "127.0.0.1")
@@ -442,10 +437,11 @@ function resolveGlmOcrOptions(options: CommonGlmOcrOptions): GlmOcrOcrServerOpti
     glmocrLogLevel: options.glmocrLogLevel ?? "INFO",
     glmocrPort: parseInteger(options.glmocrPort, 5002),
     glmocrPython: options.glmocrPython ?? "python3",
-    glmocrRoot: options.glmocrRoot ?? "/Users/arthur/dev-space/GLM-OCR",
+    glmocrRoot: options.glmocrRoot,
     glmocrServerUrl: options.glmocrServerUrl,
     layoutBatchSize: parseInteger(options.layoutBatchSize, 1),
     layoutDevice: options.layoutDevice ?? "cpu",
+    layoutModelDir: options.layoutModelDir,
     lmstudioAdapterHost: options.lmstudioAdapterHost ?? "127.0.0.1",
     lmstudioAdapterPort: parseInteger(
       options.lmstudioAdapterPort,

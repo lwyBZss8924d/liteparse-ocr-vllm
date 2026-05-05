@@ -92,6 +92,23 @@ lit glmocr-pipeline \
 
 The pipeline backend does not synthesize fallback line boxes. If GLM-OCR SDK regions do not include valid boxes, the affected regions are dropped and warnings report the degradation.
 
+For air-gapped GPU delivery, build the vLLM-only image online once and transfer the saved tar:
+
+```bash
+docker build -f Dockerfile.glmocr-offline \
+  -t liteparse-glmocr-vllm-offline:1.5.3-custom.0 .
+docker save -o liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+```
+
+On the offline host, validate the bundled model artifacts and local loopback path:
+
+```bash
+docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+docker run --rm --gpus all --ipc=host --network=none \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+```
+
 ### LM Studio GLM-OCR Direct Wrapper
 
 LiteParse can also expose a local LM Studio `glm-ocr` model directly as a Custom HTTP OCR server that follows the same `/ocr` contract as EasyOCR and PaddleOCR.

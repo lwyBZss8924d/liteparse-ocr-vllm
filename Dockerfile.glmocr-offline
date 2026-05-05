@@ -1,0 +1,100 @@
+ARG VLLM_BASE_IMAGE=vllm/vllm-openai@sha256:9eff9734a30b6713a8566217d36f8277630fd2d31cec7f0a0292835901a23aa4
+
+FROM node:24-trixie AS liteparse-builder
+
+WORKDIR /build
+COPY package.json package-lock.json tsconfig.json tsconfig.build.json ./
+RUN npm ci --ignore-scripts=false
+
+COPY src/ ./src/
+COPY cli/ ./cli/
+COPY OCR_API_SPEC.md README.md LICENSE ./
+COPY ocr/README.md ./ocr/README.md
+COPY ocr/glmocr/ ./ocr/glmocr/
+COPY ocr/lmstudio/ ./ocr/lmstudio/
+RUN npm run build
+RUN npm prune --omit=dev
+RUN mkdir -p /tmp/liteparse-pack \
+    && npm pack --pack-destination /tmp/liteparse-pack
+
+FROM ${VLLM_BASE_IMAGE}
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG NODE_MAJOR=24
+ARG GLM_OCR_SDK_REF=cef4d0ea120d1741f5cefe8985eee45f6c8eff1d
+ARG GLM_OCR_MODEL_REVISION=cb34f33832c51008c86436a3b2217bbe4adbe0b8
+ARG PP_DOCLAYOUT_MODEL_REVISION=3ec586e86ed9245a567bb13395a3db64d5c077cc
+
+ENV HF_HOME=/opt/hf \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    LITEPARSE_GLMOCR_ROOT=/opt/glm-ocr-sdk \
+    LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR=/opt/models/pp-doclayout \
+    LITEPARSE_GLMOCR_PYTHON=/opt/liteparse-glmocr-venv/bin/python \
+    LITEPARSE_GLMOCR_MODEL=glm-ocr \
+    LITEPARSE_GLMOCR_PORT=8831 \
+    LITEPARSE_VLLM_PORT=8000 \
+    LITEPARSE_OCR_PROFILE=glmocr-vllm
+
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      curl \
+      git \
+      jq \
+      libgl1 \
+      libglib2.0-0 \
+      libvips42 \
+      python3-pip \
+      python3-venv \
+    && curl -fsSL "https://deb.nodesource.com/setup_${NODE_MAJOR}.x" | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/liteparse
+COPY --from=liteparse-builder /tmp/liteparse-pack/*.tgz /tmp/liteparse-vllm.tgz
+RUN npm install -g /tmp/liteparse-vllm.tgz \
+    && rm -f /tmp/liteparse-vllm.tgz \
+    && lit --version
+
+RUN git clone https://github.com/zai-org/GLM-OCR.git /opt/glm-ocr-sdk \
+    && git -C /opt/glm-ocr-sdk checkout "${GLM_OCR_SDK_REF}" \
+    && python3 -m venv /opt/liteparse-glmocr-venv \
+    && /opt/liteparse-glmocr-venv/bin/python -m pip install --upgrade pip setuptools wheel \
+    && /opt/liteparse-glmocr-venv/bin/python -m pip install \
+      fastapi \
+      pillow \
+      python-multipart \
+      uvicorn \
+      "/opt/glm-ocr-sdk[selfhosted,server]"
+
+RUN python3 -m pip install --no-cache-dir --upgrade huggingface_hub \
+    && mkdir -p /opt/models/glm-ocr /opt/models/pp-doclayout "${HF_HOME}" \
+    && GLM_OCR_MODEL_REVISION="${GLM_OCR_MODEL_REVISION}" \
+      PP_DOCLAYOUT_MODEL_REVISION="${PP_DOCLAYOUT_MODEL_REVISION}" \
+      HF_HUB_OFFLINE=0 \
+      TRANSFORMERS_OFFLINE=0 \
+      python3 - <<'PY'
+import os
+from huggingface_hub import snapshot_download
+
+snapshot_download(
+    repo_id="zai-org/GLM-OCR",
+    revision=os.environ["GLM_OCR_MODEL_REVISION"],
+    local_dir="/opt/models/glm-ocr",
+)
+snapshot_download(
+    repo_id="PaddlePaddle/PP-DocLayoutV3_safetensors",
+    revision=os.environ["PP_DOCLAYOUT_MODEL_REVISION"],
+    local_dir="/opt/models/pp-doclayout",
+)
+PY
+
+COPY docker/glmocr-offline/entrypoint.sh /usr/local/bin/glmocr-offline-entrypoint
+COPY docker/glmocr-offline/offline-smoke.sh /usr/local/bin/glmocr-offline-smoke
+RUN chmod +x /usr/local/bin/glmocr-offline-entrypoint /usr/local/bin/glmocr-offline-smoke
+
+EXPOSE 8000 8831 8833
+ENTRYPOINT ["/usr/local/bin/glmocr-offline-entrypoint"]

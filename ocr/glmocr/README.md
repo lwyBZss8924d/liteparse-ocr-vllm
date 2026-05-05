@@ -10,9 +10,7 @@ LM Studio hosts the `glm-ocr` VLM runtime, but the official self-hosted GLM-OCR 
 
 ## Build and Run
 
-This directory follows the same dependency pattern as `ocr/easyocr` and `ocr/paddleocr`: run the Python service from this directory and let `uv` resolve the Python dependencies declared in `pyproject.toml`.
-
-The local GLM-OCR checkout is referenced by `pyproject.toml` through `tool.uv.sources`:
+This directory follows the same dependency pattern as `ocr/easyocr` and `ocr/paddleocr`: run the Python service from this directory and let `uv` resolve the Python dependencies declared in `pyproject.toml`. The GLM-OCR SDK is pinned to `zai-org/GLM-OCR` commit `cef4d0ea120d1741f5cefe8985eee45f6c8eff1d`.
 
 ```bash
 cd ocr/glmocr
@@ -22,13 +20,6 @@ uv run server.py
 ```
 
 The service listens on `http://localhost:8831/ocr` by default.
-
-On this workstation the source layout is expected to be:
-
-```bash
-/Users/arthur/dev-space/liteparse
-/Users/arthur/dev-space/GLM-OCR
-```
 
 For the default LM Studio runtime, make sure LM Studio server is running and the model is installed/loaded:
 
@@ -43,6 +34,7 @@ LITEPARSE_GLMOCR_OCR_API_URL=http://localhost:1234/v1/chat/completions
 LITEPARSE_GLMOCR_OCR_API_MODE=openai
 LITEPARSE_GLMOCR_MODEL=glm-ocr-g32-mixed_4_8-mlx
 LITEPARSE_GLMOCR_LAYOUT_DEVICE=cpu
+LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR=PaddlePaddle/PP-DocLayoutV3_safetensors
 LITEPARSE_GLMOCR_LAYOUT_BATCH_SIZE=1
 LITEPARSE_GLMOCR_MAX_WORKERS=1
 LITEPARSE_GLMOCR_HOST=0.0.0.0
@@ -97,6 +89,8 @@ lit glmocr-ocr-server \
 
 The standalone `uv run server.py` path is the same style as the EasyOCR and PaddleOCR adapters. The CLI wrapper is useful when you want LiteParse to manage the GLM-OCR SDK process and LM Studio adapter lifecycle.
 
+For portable CLI runs, omit `--glmocr-root` when `glmocr` is already importable from the selected Python environment. Pass `--glmocr-root` only for a source checkout, or set `LITEPARSE_GLMOCR_ROOT`. Docker uses `/opt/glm-ocr-sdk`.
+
 ## Model Runtime Options
 
 Default LM Studio OpenAI-compatible path:
@@ -115,6 +109,15 @@ LITEPARSE_GLMOCR_OCR_API_URL=http://127.0.0.1:8080/v1/chat/completions \
 LITEPARSE_GLMOCR_MODEL=glm-ocr \
 uv run server.py
 ```
+
+vLLM offline Docker runtime:
+
+```bash
+docker run --rm --gpus all --ipc=host -p 8831:8831 \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+```
+
+The offline image starts `vllm serve /opt/models/glm-ocr` and points the GLM-OCR SDK at `/opt/models/pp-doclayout` through `LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR`.
 
 Ollama-style runtime:
 

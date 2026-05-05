@@ -73,7 +73,11 @@ def test_server_health_endpoint() -> None:
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    assert response.json() == {
+        "status": "healthy",
+        "model": "glm-ocr-g32-mixed_4_8-mlx",
+        "layout_model_dir": "PaddlePaddle/PP-DocLayoutV3_safetensors",
+    }
 
 
 def test_server_ocr_endpoint() -> None:

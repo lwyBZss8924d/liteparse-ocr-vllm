@@ -35,7 +35,7 @@ def _find_cli(install_if_not_available: bool) -> str:
     # Check if npx is available
     npx_path = shutil.which("npx")
     if npx_path:
-        return "npx @llamaindex/liteparse"
+        return "npx @arthur/liteparse-vllm"
 
     # Check common node_modules locations
     possible_paths = [
@@ -54,20 +54,20 @@ def _find_cli(install_if_not_available: bool) -> str:
             raise CLINotFoundError(
                 "liteparse CLI not found and npm is not available to auto-install it.\n"
                 "Please install Node.js (>= 18) from https://nodejs.org/ and then run:\n"
-                "  npm install -g @llamaindex/liteparse"
+                "  npm install -g @arthur/liteparse-vllm"
             )
         warnings.warn(
-            "liteparse CLI could not be found. Running `npm install -g @llamaindex/liteparse` to install it.",
+            "liteparse CLI could not be found. Running `npm install -g @arthur/liteparse-vllm` to install it.",
             UserWarning,
             stacklevel=2,
         )
         result = subprocess.run(
-            ["npm", "install", "-g", "@llamaindex/liteparse"],
+            ["npm", "install", "-g", "@arthur/liteparse-vllm"],
         )
         if result.returncode != 0:
             raise subprocess.CalledProcessError(
                 result.returncode,
-                ["npm", "install", "-g", "@llamaindex/liteparse"],
+                ["npm", "install", "-g", "@arthur/liteparse-vllm"],
                 result.stderr,
             )
         cli_path = shutil.which("liteparse")
@@ -76,7 +76,7 @@ def _find_cli(install_if_not_available: bool) -> str:
 
     raise CLINotFoundError(
         "liteparse CLI not found. Please install Node.js (>= 18) and then run:\n"
-        "  npm install -g @llamaindex/liteparse"
+        "  npm install -g @arthur/liteparse-vllm"
     )
 
 

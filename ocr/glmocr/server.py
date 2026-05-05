@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 DEFAULT_MODEL = "glm-ocr-g32-mixed_4_8-mlx"
 DEFAULT_OCR_API_URL = "http://localhost:1234/v1/chat/completions"
+DEFAULT_LAYOUT_MODEL_DIR = "PaddlePaddle/PP-DocLayoutV3_safetensors"
 
 
 class OcrResponse(BaseModel):
@@ -24,6 +25,8 @@ class OcrResponse(BaseModel):
 
 class StatusResponse(BaseModel):
     status: str
+    model: str
+    layout_model_dir: str
 
 
 class GlmOcrSdkServer:
@@ -69,7 +72,13 @@ class GlmOcrSdkServer:
 
         @app.get("/health")
         def health() -> StatusResponse:
-            return StatusResponse(status="healthy")
+            return StatusResponse(
+                status="healthy",
+                model=self.model,
+                layout_model_dir=os.getenv(
+                    "LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR", DEFAULT_LAYOUT_MODEL_DIR
+                ),
+            )
 
         return app
 
@@ -82,6 +91,7 @@ class GlmOcrSdkServer:
         ocr_api_url = os.getenv("LITEPARSE_GLMOCR_OCR_API_URL", DEFAULT_OCR_API_URL)
         ocr_api_mode = os.getenv("LITEPARSE_GLMOCR_OCR_API_MODE", "openai")
         layout_device = os.getenv("LITEPARSE_GLMOCR_LAYOUT_DEVICE", "cpu")
+        layout_model_dir = os.getenv("LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR", DEFAULT_LAYOUT_MODEL_DIR)
         layout_batch_size = int(os.getenv("LITEPARSE_GLMOCR_LAYOUT_BATCH_SIZE", "1"))
         max_workers = int(os.getenv("LITEPARSE_GLMOCR_MAX_WORKERS", "1"))
         timeout = int(os.getenv("LITEPARSE_GLMOCR_TIMEOUT", "300"))
@@ -96,6 +106,7 @@ class GlmOcrSdkServer:
                 "pipeline.ocr_api.api_url": ocr_api_url,
                 "pipeline.ocr_api.api_mode": ocr_api_mode,
                 "pipeline.ocr_api.model": self.model,
+                "pipeline.layout.model_dir": layout_model_dir,
                 "pipeline.layout.batch_size": layout_batch_size,
                 "pipeline.max_workers": max_workers,
             },

@@ -100,6 +100,7 @@ describe("GLM-OCR runtime config", () => {
       host: "127.0.0.1",
       layoutBatchSize: 1,
       layoutDevice: "cpu",
+      layoutModelDir: "/opt/models/pp-doclayout",
       maxWorkers: 2,
       model: "glm-ocr-g32-mixed_4_8-mlx",
       ocrApiUrl: "http://127.0.0.1:8832/v1/chat/completions",
@@ -112,6 +113,7 @@ describe("GLM-OCR runtime config", () => {
     expect(yaml).toContain('model: "glm-ocr-g32-mixed_4_8-mlx"');
     expect(yaml).toContain('api_mode: "openai"');
     expect(yaml).toContain('device: "cpu"');
+    expect(yaml).toContain('model_dir: "/opt/models/pp-doclayout"');
   });
 
   it("builds a default plan without mutating the GLM-OCR source config", () => {
@@ -125,6 +127,7 @@ describe("GLM-OCR runtime config", () => {
 
     expect(plan.serverUrl).toBe("http://127.0.0.1:5002");
     expect(plan.ocrApiUrl).toBe("http://localhost:1234/v1/chat/completions");
+    expect(plan.layoutModelDir).toBe("PaddlePaddle/PP-DocLayoutV3_safetensors");
     expect(plan.generatedConfigYaml).toContain("pipeline:");
   });
 });

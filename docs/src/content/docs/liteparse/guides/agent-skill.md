@@ -5,17 +5,25 @@ sidebar:
   order: 6
 ---
 
-LiteParse can be installed as a **coding agent skill** using Vercel's [skills](https://github.com/vercel-labs/skills) utility. This gives your coding agent the ability to process documents, generate screenshots, and parse text from files, all locally.
+LiteParse OCR vLLM keeps its custom **coding agent skill** source in this repository. This gives your coding agent the ability to process documents, generate screenshots, parse text from files, and use the fork's GLM-OCR/vLLM workflows with package names and commands that match this custom build.
 
 ## Installation
 
-Add the LiteParse skill to your project:
+Use the repo-versioned source as the authority:
 
 ```bash
-npx skills add run-llama/llamaparse-agent-skills --skill liteparse
+skills/liteparse-cli-tools-custom-collection/
 ```
 
-This downloads a skill file that compatible coding agents (Claude Code, Cursor, etc.) will automatically pick up.
+Validate and sync it into the installed runtime projection:
+
+```bash
+npm run validate:agent-skills
+npm run sync:agent-skills:dry-run
+npm run sync:agent-skills
+```
+
+The installed projection is `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`. Treat that projection as generated runtime state; do not edit it directly.
 
 Once configured, your agent will be able to call the LiteParse CLI commands directly from its code execution environment. This means you can have your agent parse PDFs, pull out the text, and generate screenshots on the fly as part of its reasoning process.
 

@@ -271,6 +271,8 @@ function resolveServerOptions(options: GlmOcrOcrServerOptions): Required<GlmOcrO
     host: options.host ?? "127.0.0.1",
     layoutBatchSize: options.layoutBatchSize ?? 1,
     layoutDevice: options.layoutDevice ?? "cpu",
+    layoutModelDir:
+      options.layoutModelDir ?? process.env.LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR ?? "",
     lmstudioAdapterHost: options.lmstudioAdapterHost ?? "127.0.0.1",
     lmstudioAdapterPort: options.lmstudioAdapterPort ?? 8832,
     lmstudioApiMode: options.lmstudioApiMode ?? "auto",

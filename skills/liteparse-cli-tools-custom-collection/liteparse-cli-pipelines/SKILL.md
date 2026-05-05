@@ -283,14 +283,16 @@ lit glmocr-pipeline \
   --path test_case_multimodal_document_lossless_parse/pumpkin_book/gold/llpab_manual_pages/source/pumpkin_book_10p.pdf \
   --output test_case_multimodal_document_lossless_parse/pumpkin_book/gold/llpab_manual_pages/runs/candidate-raw/liteparse-glmocr-sdk \
   --glmocr-python /Users/arthur/dev-space/liteparse/ocr/glmocr/.venv/bin/python \
-  --glmocr-root /Users/arthur/dev-space/GLM-OCR \
   --model-runtime openai-compatible \
   --ocr-api-url http://127.0.0.1:8832/v1/chat/completions \
   --model glm-ocr-g32-mixed_4_8-mlx \
+  --layout-model-dir /opt/models/pp-doclayout \
   --layout-device cpu \
   --target-pages "1-10" \
   --json
 ```
+
+Use `--glmocr-root <path>` only when the selected Python cannot import `glmocr`; Docker defaults to `/opt/glm-ocr-sdk` through `LITEPARSE_GLMOCR_ROOT`.
 
 Then import the generated candidate bundle into LLPAB and run deterministic-suite. Treat LLPAB failures as evaluation/runtime failures and direct-mode warnings as diagnostic evidence, not as official structured pipeline results.
 

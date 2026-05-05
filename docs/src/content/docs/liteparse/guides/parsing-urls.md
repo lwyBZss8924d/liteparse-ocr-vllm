@@ -27,7 +27,7 @@ The `-` argument tells LiteParse to read from stdin instead of a file path. Any 
 The TypeScript library accepts `Buffer`/`Uint8Array` directly, so you can handle the download however you like:
 
 ```typescript
-import { LiteParse } from "@llamaindex/liteparse";
+import { LiteParse } from "@arthur/liteparse-vllm";
 
 const response = await fetch("https://example.com/report.pdf");
 const buffer = Buffer.from(await response.arrayBuffer());

@@ -43,6 +43,7 @@ Python service and CLI wrapper backed by the official GLM-OCR SDK self-hosted pi
 - Uses PP-DocLayout for real layout `bbox_2d`, then calls LM Studio/vLLM/SGLang/Ollama for crop OCR
 - Python dependencies are declared in `ocr/glmocr/pyproject.toml` and managed with `uv run server.py`, matching the EasyOCR and PaddleOCR adapters
 - Auto-loads the local LM Studio model with `lms load` when LM Studio is the model runtime
+- The release image target `Dockerfile.glmocr-offline` bundles the pinned GLM-OCR SDK, vLLM runtime, GLM-OCR model, and PP-DocLayout model for offline GPU hosts
 
 ### [lmstudio/](./lmstudio/)
 Node server exposed by the LiteParse CLI and backed by LM Studio `glm-ocr`.
@@ -78,6 +79,10 @@ uv run server.py
 
 # OR start the Node-managed GLM-OCR SDK pipeline wrapper from the LiteParse CLI
 lit glmocr-ocr-server
+
+# OR start the offline vLLM GLM-OCR image after docker load on a GPU host
+docker run --rm --gpus all --ipc=host -p 8831:8831 \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.0
 
 # OR start the LM Studio direct wrapper
 lit lmstudio-ocr-server

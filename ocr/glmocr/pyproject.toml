@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-glmocr = { path = "../../../GLM-OCR", editable = true }
+glmocr = { git = "https://github.com/zai-org/GLM-OCR.git", rev = "cef4d0ea120d1741f5cefe8985eee45f6c8eff1d" }
 
 [dependency-groups]
 dev = [
