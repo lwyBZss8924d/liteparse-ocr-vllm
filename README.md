@@ -80,8 +80,9 @@ npm install -g ./arthur-liteparse-vllm-*.tgz
 For a release-grade offline npm tarball, build on Linux x64 so native runtime dependencies match the target host:
 
 ```bash
-npm ci --omit=dev
+npm ci
 npm run build
+npm prune --omit=dev
 npm pack --dry-run --json
 npm pack
 ```
