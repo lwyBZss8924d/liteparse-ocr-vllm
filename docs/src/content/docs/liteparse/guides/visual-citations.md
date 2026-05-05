@@ -35,7 +35,7 @@ Coordinates are in **PDF points** (1 point = 1/72 inch). Origin is the top-left 
 The library lets you do both in a single script, parse for bboxes and generate screenshots. For example, you might be looking for specific information like "Revenue" and want to show exactly where it appears on the page:
 
 ```typescript
-import { LiteParse } from "@arthur/liteparse-vllm";
+import { LiteParse } from "@zzwz/liteparse-vllm";
 
 const parser = new LiteParse({ outputFormat: "json", dpi: 150 });
 
@@ -77,7 +77,7 @@ For example, at the default 150 DPI the scale factor is `150 / 72 ≈ 2.08`, so 
 A single text item often contains just one word or fragment. A phrase like `"0°C to 70°C"` may span several adjacent items. The `searchItems` utility handles this — it concatenates consecutive items, finds matches, and returns merged text items with combined bounding boxes:
 
 ```typescript
-import { LiteParse, searchItems } from "@arthur/liteparse-vllm";
+import { LiteParse, searchItems } from "@zzwz/liteparse-vllm";
 
 const parser = new LiteParse({ outputFormat: "json" });
 const result = await parser.parse("report.pdf");
@@ -99,7 +99,7 @@ For single-word searches, iterating `textItems` individually (as shown in the li
 Here's a complete workflow that parses a PDF, searches for a phrase, and draws yellow highlight boxes on the page screenshot:
 
 ```typescript
-import { LiteParse, searchItems } from "@arthur/liteparse-vllm";
+import { LiteParse, searchItems } from "@zzwz/liteparse-vllm";
 import sharp from "sharp";
 
 const DPI = 150;

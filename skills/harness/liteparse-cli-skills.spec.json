@@ -99,7 +99,7 @@
     "required_terms": {
       "AGENTS.md": [
         "skills/liteparse-cli-tools-custom-collection",
-        "@arthur/liteparse-vllm",
+        "@zzwz/liteparse-vllm",
         "custom/vllm-ocr-main",
         "src/engines/ocr/codex.ts",
         "src/engines/ocr/codex-server.ts",

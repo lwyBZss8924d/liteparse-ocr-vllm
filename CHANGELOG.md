@@ -1,10 +1,10 @@
-# @arthur/liteparse-vllm
+# @zzwz/liteparse-vllm
 
 ## 1.5.3-custom.0
 
 ### Custom Fork Changes
 
-- Forked upstream `run-llama/liteparse` into the independent custom OCR package `@arthur/liteparse-vllm`, based on upstream `v1.5.3`.
+- Forked upstream `run-llama/liteparse` into the independent custom OCR package `@zzwz/liteparse-vllm`, based on upstream `v1.5.3`.
 - Added custom OCR server and pipeline tooling for GLM-OCR SDK, LM Studio diagnostics, and Codex OCR diagnostics while preserving the baseline LiteParse `POST /ocr` multipart contract.
 - Added `src/engines/ocr/codex.ts` and `src/engines/ocr/codex-server.ts` for LiteParse-compatible `codex-ocr-server` plus the richer `POST /ocr/analyze` artifact path.
 - Added offline packaging docs and CI coverage for the custom branch, including Linux x64 offline npm tgz smoke validation in `node:24-trixie-slim --network=none`.

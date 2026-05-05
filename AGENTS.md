@@ -10,7 +10,7 @@ This repository is an independent custom OCR fork of upstream `run-llama/litepar
 - Upstream remote: `upstream = https://github.com/run-llama/liteparse.git`
 - Custom branch: `custom/vllm-ocr-main`
 - Upstream mirror branch: `main`
-- Custom npm package: `@arthur/liteparse-vllm`
+- Custom npm package: `@zzwz/liteparse-vllm`
 - Current custom version pattern: upstream version plus custom suffix, for example `1.5.3-custom.0`
 
 Keep `main` as an upstream mirror. Do not publish custom OCR releases from `main`; merge upstream `main` into `custom/vllm-ocr-main` and publish custom tags such as `custom-v1.5.3-ocr.0` only from the custom branch. When README, packaging, release, or CI identity changes, update this AGENTS.md file in the same change so future agents do not fall back to upstream assumptions.
@@ -100,7 +100,7 @@ Codex OCR is implemented in `src/engines/ocr/codex.ts` and `src/engines/ocr/code
 - Live development and tests should use `--codex-home "$HOME/.codex-test"` or `LITEPARSE_CODEX_HOME=$HOME/.codex-test` so auth/config are separated from normal Codex state.
 
 ### 7. Custom Packaging and CI
-The custom npm package is `@arthur/liteparse-vllm`, not `@llamaindex/liteparse`. Build with `tsconfig.build.json` so test files are not emitted into `dist`, and prune dev dependencies before producing a release-grade Linux x64 offline tgz. The npm package should include Node CLI/runtime dependencies and OCR adapter source/docs; do not put GLM model weights, Python GPU wheels, `.venv`, local benchmarks, or model caches into npm.
+The custom npm package is `@zzwz/liteparse-vllm`, not `@llamaindex/liteparse`. Build with `tsconfig.build.json` so test files are not emitted into `dist`, and prune dev dependencies before producing a release-grade Linux x64 offline tgz. The npm package should include Node CLI/runtime dependencies and OCR adapter source/docs; do not put GLM model weights, Python GPU wheels, `.venv`, local benchmarks, or model caches into npm.
 
 The Docker image uses `codex` as its default OCR profile and exposes `codex-ocr-server` on port `8833`; keep `glmocr-vllm` as an explicit GPU/vLLM profile. Docker docs must state that Codex OCR needs `LITEPARSE_CODEX_HOME` with auth/config, or a mounted Codex `config.toml` with a custom `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"` only; do not claim direct Chat Completions provider support unless the pinned Codex config schema documents it.
 

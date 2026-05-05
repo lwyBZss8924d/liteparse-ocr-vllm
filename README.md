@@ -1,6 +1,6 @@
 # LiteParse OCR vLLM
 
-[![npm version](https://img.shields.io/npm/v/@arthur/liteparse-vllm.svg)](https://www.npmjs.com/package/@arthur/liteparse-vllm)
+[![npm version](https://img.shields.io/npm/v/@zzwz/liteparse-vllm.svg)](https://www.npmjs.com/package/@zzwz/liteparse-vllm)
 |
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 |
@@ -14,7 +14,7 @@ Repository identity:
 - Upstream repo: `https://github.com/run-llama/liteparse.git`
 - Custom branch: `custom/vllm-ocr-main`
 - Upstream mirror branch: `main`
-- npm package: `@arthur/liteparse-vllm`
+- npm package: `@zzwz/liteparse-vllm`
 - Current custom version: `1.5.3-custom.0`, based on upstream `v1.5.3`
 
 Do not publish custom OCR releases from `main`. Keep upstream syncs on `main`, merge them into `custom/vllm-ocr-main`, and publish this fork from the custom branch with custom tags such as `custom-v1.5.3-ocr.0`.
@@ -47,7 +47,7 @@ LiteParse OCR vLLM keeps LiteParse's local-first parser and standard OCR HTTP co
 Install globally via npm to use the `lit` command anywhere:
 
 ```bash
-npm i -g @arthur/liteparse-vllm
+npm i -g @zzwz/liteparse-vllm
 ```
 
 Then use it:
@@ -158,13 +158,13 @@ lit screenshot document.pdf --target-pages "1-10" -o ./screenshots
 Install as a dependency in your project:
 
 ```bash
-npm install @arthur/liteparse-vllm
+npm install @zzwz/liteparse-vllm
 # or
-pnpm add @arthur/liteparse-vllm
+pnpm add @zzwz/liteparse-vllm
 ```
 
 ```typescript
-import { LiteParse } from '@arthur/liteparse-vllm';
+import { LiteParse } from '@zzwz/liteparse-vllm';
 
 const parser = new LiteParse({ ocrEnabled: true });
 const result = await parser.parse('document.pdf');
@@ -176,7 +176,7 @@ console.log(result.text);
 You can pass raw bytes directly instead of a file path, which is useful for remote files:
 
 ```typescript
-import { LiteParse } from '@arthur/liteparse-vllm';
+import { LiteParse } from '@zzwz/liteparse-vllm';
 import { readFile } from 'fs/promises';
 
 const parser = new LiteParse();

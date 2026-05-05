@@ -12,15 +12,15 @@ LiteParse can be used as a library in your own code, not just from the CLI. Ther
 Install as a project dependency:
 
 ```bash
-npm install @arthur/liteparse-vllm
+npm install @zzwz/liteparse-vllm
 # or
-pnpm add @arthur/liteparse-vllm
+pnpm add @zzwz/liteparse-vllm
 ```
 
 ### Parsing a document
 
 ```typescript
-import { LiteParse } from "@arthur/liteparse-vllm";
+import { LiteParse } from "@zzwz/liteparse-vllm";
 
 const parser = new LiteParse({ ocrEnabled: true });
 const result = await parser.parse("document.pdf");
@@ -122,7 +122,7 @@ The Python package is a wrapper around the LiteParse Node.js CLI. **Node.js (>= 
 First, install the LiteParse CLI:
 
 ```bash
-npm install -g @arthur/liteparse-vllm
+npm install -g @zzwz/liteparse-vllm
 ```
 
 Then install the Python package:
@@ -132,7 +132,7 @@ pip install liteparse
 ```
 
 <Aside type="caution">
-  The Python package calls the LiteParse CLI under the hood via subprocess. Node.js (>= 18) is required. While the package can auto-install the CLI via `npm install -g @arthur/liteparse-vllm` on first use, it is recommended to install it separately beforehand.
+  The Python package calls the LiteParse CLI under the hood via subprocess. Node.js (>= 18) is required. While the package can auto-install the CLI via `npm install -g @zzwz/liteparse-vllm` on first use, it is recommended to install it separately beforehand.
 </Aside>
 
 ### Parsing a document

@@ -147,12 +147,12 @@ export async function guessExtensionFromBuffer(data: Uint8Array) {
 **`stubs/pdfjsImporter.ts`** — browser-safe PDF.js loader (no `node:url`/`node:path`):
 ```typescript
 // @ts-expect-error vendored ESM build has no types
-import * as pdfjs from "@arthur/liteparse-vllm/vendor/pdfjs/pdf.mjs";
+import * as pdfjs from "@zzwz/liteparse-vllm/vendor/pdfjs/pdf.mjs";
 
 export async function importPdfJs() {
   return {
     fn: (pdfjs as any).getDocument,
-    dir: new URL("@arthur/liteparse-vllm/vendor/pdfjs", import.meta.url).href,
+    dir: new URL("@zzwz/liteparse-vllm/vendor/pdfjs", import.meta.url).href,
   };
 }
 ```
@@ -177,7 +177,7 @@ The remaining stubs (`pdfium-renderer`, `http-simple`, `gridDebugLogger`, `gridV
 Once the bundler is configured, use LiteParse the same way as in Node — just pass `Uint8Array` instead of file paths:
 
 ```typescript
-import { LiteParse } from "@arthur/liteparse-vllm";
+import { LiteParse } from "@zzwz/liteparse-vllm";
 
 const parser = new LiteParse({
   ocrEnabled: true,

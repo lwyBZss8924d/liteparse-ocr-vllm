@@ -146,7 +146,7 @@ Prefer the CLI for ordinary parse, screenshot, and batch workflows. Switch to th
 Minimal pattern:
 
 ```typescript
-import { LiteParse } from "@arthur/liteparse-vllm";
+import { LiteParse } from "@zzwz/liteparse-vllm";
 
 const parser = new LiteParse({
   ocrEnabled: true,
