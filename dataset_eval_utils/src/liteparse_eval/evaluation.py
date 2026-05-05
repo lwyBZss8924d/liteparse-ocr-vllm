@@ -24,6 +24,21 @@ from liteparse_eval.providers import (
 )
 
 
+def build_liteparse_provider_from_args(args: argparse.Namespace) -> LiteparseProvider:
+    """Build a LiteParse provider from CLI options."""
+    return LiteparseProvider(
+        ocr_enabled=args.liteparse_ocr_enabled,
+        ocr_server_url=args.liteparse_ocr_server_url,
+        ocr_language=args.liteparse_ocr_language,
+        max_pages=args.liteparse_max_pages,
+        dpi=args.liteparse_dpi,
+        precise_bounding_box=not args.liteparse_no_precise_bbox,
+        skip_diagonal_text=args.liteparse_skip_diagonal_text,
+        preserve_very_small_text=args.liteparse_preserve_small_text,
+        cli_path=args.liteparse_cli_path,
+    )
+
+
 @dataclass
 class LatencyMetrics:
     """Latency metrics for provider calls."""
@@ -434,6 +449,61 @@ def main():
         default="anthropic",
         help="LLM provider to use. (default: anthropic)"
     )
+    parser.add_argument(
+        "--liteparse-ocr-server-url",
+        type=str,
+        default=None,
+        help="LiteParse HTTP OCR server URL, e.g. http://127.0.0.1:8831/ocr"
+    )
+    parser.add_argument(
+        "--liteparse-ocr-language",
+        type=str,
+        default="en",
+        help="LiteParse OCR language code (default: en)"
+    )
+    parser.add_argument(
+        "--liteparse-dpi",
+        type=int,
+        default=150,
+        help="LiteParse render/OCR DPI (default: 150)"
+    )
+    parser.add_argument(
+        "--liteparse-max-pages",
+        type=int,
+        default=1000,
+        help="LiteParse maximum pages (default: 1000)"
+    )
+    parser.add_argument(
+        "--liteparse-cli-path",
+        type=str,
+        default=None,
+        help="Path to the liteparse/lit CLI executable"
+    )
+    parser.add_argument(
+        "--liteparse-no-precise-bbox",
+        action="store_true",
+        default=False,
+        help="Disable LiteParse precise bounding boxes"
+    )
+    parser.add_argument(
+        "--liteparse-skip-diagonal-text",
+        action="store_true",
+        default=False,
+        help="Pass the backward-compatible skip diagonal text option"
+    )
+    parser.add_argument(
+        "--liteparse-preserve-small-text",
+        action="store_true",
+        default=False,
+        help="Preserve very small text in LiteParse"
+    )
+    parser.add_argument(
+        "--liteparse-no-ocr",
+        dest="liteparse_ocr_enabled",
+        action="store_false",
+        default=True,
+        help="Disable LiteParse OCR"
+    )
 
     args = parser.parse_args()
 
@@ -445,7 +515,7 @@ def main():
     elif args.parse_provider == "markitdown":
         parser_provider = MarkItDownProvider()
     elif args.parse_provider == "liteparse":
-        parser_provider = LiteparseProvider()
+        parser_provider = build_liteparse_provider_from_args(args)
     else:
         raise ValueError("Please specify a valid parser provider using --parse-provider")
 

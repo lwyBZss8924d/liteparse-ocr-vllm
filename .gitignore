@@ -61,6 +61,7 @@ more_hard_docs/
 nytimes_imgs/
 ac/
 ltt/
+test_case_multimodal_document_lossless_parse/
 
 # OCR data files
 *.traineddata
@@ -69,3 +70,4 @@ ltt/
 .docs-preview/
 docs/src/content/docs/liteparse/api.md
 docs/src/content/docs/liteparse/.api-tmp/
+.omx/

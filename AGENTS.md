@@ -30,7 +30,10 @@ liteparse/
 ├── cli/                # CLI implementation
 ├── ocr/                # Example OCR server implementations
 │   ├── easyocr/        # EasyOCR wrapper server
+│   ├── glmocr/         # GLM-OCR SDK pipeline server docs
+│   ├── lmstudio/       # LM Studio GLM-OCR wrapper server docs
 │   └── paddleocr/      # PaddleOCR wrapper server
+├── skills/             # Repo-versioned agent skills source and harness spec
 └── dist/               # Compiled JavaScript output
 ```
 
@@ -93,6 +96,26 @@ The processing pipeline is in `src/processing/`. Key files:
 2. Add corresponding config field in `src/core/types.ts`
 3. Update `src/core/config.ts` with default value
 4. Use the option in `src/core/parser.ts`
+
+### Adding Advanced OCR Tooling
+GLM-OCR support is implemented as custom CLI/server tooling, not as a replacement for the baseline OCR contract.
+
+1. Keep `POST /ocr` compatible with `OCR_API_SPEC.md`: multipart `file`, optional `language`, and JSON `{ results: [{ text, bbox, confidence }] }`.
+2. Use `lit glmocr-ocr-server` or `lit glmocr-pipeline` for official GLM-OCR SDK layout bboxes. These boxes must come from PP-DocLayout/SDK output, not prompt-inferred whole-page LM Studio text.
+3. Keep `lit lmstudio-ocr`, `lit lmstudio-ocr-server`, and `lit lmstudio-ocr-pipeline` as direct LM Studio tooling for lightweight OCR/model smoke tests; mark fallback line boxes as degraded.
+4. If LM Studio runs locally and the model is installed but not loaded, the tooling may run `lms load <model> --identifier <model> -y`; keep `--no-auto-load` available for fail-fast operation.
+5. Treat model output as untrusted OCR evidence. Preserve raw responses and warnings in advanced artifacts instead of changing the LiteParse `/ocr` response shape.
+
+### Updating LiteParse Agent Skills
+The repo source authority for the custom `lit` CLI skills is `skills/liteparse-cli-tools-custom-collection`. Do not edit `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection` directly except through the sync script; that path is the validated installed runtime projection. Do not add repo-local `./.agents/skills` or `./.codex/skills` for this collection because those paths can auto-load runtime skills during development sessions.
+
+When changing the skills, keep the CLI, docs, and OCR contract synchronized:
+
+1. Edit `skills/liteparse-cli-tools-custom-collection/**`.
+2. Update relevant docs such as `OCR_API_SPEC.md`, `README.md`, `cli/README.md`, `ocr/README.md`, or `src/engines/ocr/README.md`.
+3. Run `npm run validate:agent-skills`.
+4. Run `npm run sync:agent-skills:dry-run`.
+5. Run `npm run sync:agent-skills` after the dry-run is clean.
 
 ## Testing Approach
 

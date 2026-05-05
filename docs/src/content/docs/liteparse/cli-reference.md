@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-LiteParse provides the `lit` CLI with three commands: `parse`, `batch-parse`, and `screenshot`.
+LiteParse provides the `lit` CLI with document parsing commands and advanced OCR tooling.
 
 ## `lit parse`
 
@@ -170,3 +170,202 @@ These options are available on all commands:
 |--------|-------------|
 | `-h, --help` | Show help for a command |
 | `-V, --version` | Show version number |
+
+---
+
+## `lit lmstudio-ocr`
+
+Run a single image directly through LM Studio `glm-ocr`.
+
+```
+lit lmstudio-ocr [options] <image>
+```
+
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-o, --output <file>` | Write normalized artifact JSON to a file | — |
+| `--raw-output <file>` | Write the raw LM Studio response JSON | — |
+| `--mode <mode>` | `auto`, `text`, `layout`, `table`, `formula`, or `diagram` | `auto` |
+| `--api-mode <mode>` | `lmstudio-native` or `openai` | `lmstudio-native` |
+| `--base-url <url>` | LM Studio base URL | `http://localhost:1234` |
+| `--model <model>` | LM Studio model identifier | `glm-ocr-g32-mixed_4_8-mlx` |
+| `--no-auto-load` | Disable automatic `lms load` | — |
+| `--json` | Print normalized artifact JSON | — |
+| `--strict-bbox` | Drop OCR regions without boxes | — |
+
+Direct mode is a lightweight OCR/model smoke-test path. It may use fallback line boxes when model output has no reliable `bbox_2d`; use `glmocr-ocr-server` for official GLM-OCR SDK layout boxes.
+
+## `lit codex-ocr`
+
+Run a single image through OpenAI Codex multimodal OCR.
+
+```
+lit codex-ocr [options] <image>
+```
+
+### Options
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-o, --output <file>` | Write normalized Codex OCR artifact JSON to a file | — |
+| `--raw-output <file>` | Write the raw Codex SDK/app-server response JSON | — |
+| `--backend <backend>` | `sdk` or `app-server` | `sdk` |
+| `--codex-home <dir>` | Codex state directory; live dev tests use `$HOME/.codex-test` | — |
+| `--codex-path <path>` | Path to the `codex` CLI binary | — |
+| `--model <model>` | Codex model | `gpt-5.5` |
+| `--reasoning-effort <effort>` | `minimal`, `low`, `medium`, `high`, or `xhigh` | `medium` |
+| `--page-number <n>` | Page number metadata | `1` |
+| `--json` | Print normalized artifact JSON | — |
+| `--include-raw` | Include raw Codex response in artifact output | — |
+| `--strict-bbox` | Drop OCR regions without boxes | — |
+
+Use `--model gpt-5.4-mini` for cheaper smoke tests and `--model gpt-5.5` for higher-quality document understanding.
+
+## `lit codex-ocr-server`
+
+Start a LiteParse-compatible HTTP OCR server backed by OpenAI Codex.
+
+```
+lit codex-ocr-server [options]
+```
+
+The server listens on `http://127.0.0.1:8833/ocr` by default and implements the same multipart `/ocr` contract as other LiteParse OCR servers. `POST /ocr/analyze` returns the full advanced artifact with page Markdown, page metadata, layout regions, segmented assets, annotations, conversion results, model metadata, and provenance.
+
+Important options:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--host <host>` | Server host | `127.0.0.1` |
+| `--port <port>` | Server port | `8833` |
+| `--backend <backend>` | `sdk` or `app-server` | `sdk` |
+| `--codex-home <dir>` | Codex state directory | — |
+| `--model <model>` | Codex model | `gpt-5.5` |
+| `--reasoning-effort <effort>` | Codex model reasoning effort | `medium` |
+| `--concurrency <n>` | Maximum concurrent OCR requests | `1` |
+| `--strict-bbox` | Drop OCR regions without boxes | — |
+
+## `lit codex-ocr-pipeline`
+
+Render documents or collect images, run Codex OCR per page, and write agent-friendly artifacts.
+
+```
+lit codex-ocr-pipeline -p <path> -o <output-dir> [options]
+```
+
+Examples:
+
+```bash
+lit codex-ocr-pipeline \
+  --path document.pdf \
+  --output ./codex-ocr-output \
+  --target-pages "1-3" \
+  --codex-home "$HOME/.codex-test" \
+  --json
+```
+
+Output includes page PNGs, Codex artifacts, LiteParse `/ocr` result JSON, segmented asset JSON, annotation JSON, and final Markdown/JSON. The final Markdown includes a LiteParse structured OCR context section that promotes page metadata, selected layout regions, and segmented asset details so downstream QA can use facts that were captured outside the main page Markdown.
+
+## `lit glmocr-ocr-server`
+
+Start a LiteParse-compatible HTTP OCR server backed by the official GLM-OCR SDK self-hosted pipeline.
+
+```
+lit glmocr-ocr-server [options]
+```
+
+The server listens on `http://127.0.0.1:8831/ocr` by default and implements the same multipart `/ocr` contract as other LiteParse OCR servers. Layout boxes come from GLM-OCR SDK PP-DocLayout `bbox_2d` and are converted to pixel bboxes.
+
+Important options:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--port <port>` | LiteParse OCR server port | `8831` |
+| `--glmocr-root <path>` | GLM-OCR source checkout root | `/Users/arthur/dev-space/GLM-OCR` |
+| `--model-runtime <runtime>` | `lmstudio`, `openai-compatible`, `ollama`, or `external` | `lmstudio` |
+| `--base-url <url>` | LM Studio base URL | `http://localhost:1234` |
+| `--model <model>` | GLM-OCR model identifier | `glm-ocr-g32-mixed_4_8-mlx` |
+| `--lmstudio-api-mode <mode>` | `auto`, `openai`, or `native-adapter` | `auto` |
+| `--ocr-api-url <url>` | External model runtime URL | — |
+| `--layout-device <device>` | `cpu`, `cuda`, or `cuda:N` | `cpu` |
+| `--no-auto-load` | Disable automatic `lms load` | — |
+
+## `lit glmocr-pipeline`
+
+Render documents or collect images, run the GLM-OCR SDK layout pipeline per page, and write agent-friendly artifacts.
+
+```
+lit glmocr-pipeline -p <path> -o <output-dir> [options]
+```
+
+Examples:
+
+```bash
+lit glmocr-pipeline \
+  --path document.pdf \
+  --output ./glmocr-output \
+  --target-pages "1-3" \
+  --layout-device cpu \
+  --json
+```
+
+Output includes page images, raw GLM-OCR SDK artifacts, LiteParse `/ocr` result JSON, and final Markdown/JSON.
+
+## `lit lmstudio-ocr-server`
+
+Start a LiteParse-compatible HTTP OCR server backed by LM Studio GLM-OCR.
+
+```
+lit lmstudio-ocr-server [options]
+```
+
+The server implements the standard LiteParse OCR API:
+
+```bash
+curl -X POST http://127.0.0.1:8830/ocr \
+  -F "file=@page.png" \
+  -F "language=en"
+```
+
+It returns:
+
+```json
+{
+  "results": [
+    { "text": "recognized text", "bbox": [0, 0, 100, 20], "confidence": 1 }
+  ]
+}
+```
+
+Important options:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `--host <host>` | Server host | `127.0.0.1` |
+| `--port <port>` | Server port | `8830` |
+| `--base-url <url>` | LM Studio base URL | `http://localhost:1234` |
+| `--model <model>` | LM Studio model identifier | `glm-ocr-g32-mixed_4_8-mlx` |
+| `--no-auto-load` | Disable automatic `lms load` | — |
+| `--concurrency <n>` | Maximum concurrent OCR requests | `1` |
+| `--strict-bbox` | Drop OCR regions without boxes | — |
+
+## `lit lmstudio-ocr-pipeline`
+
+Render documents or collect images, run GLM-OCR per page, and write agent-friendly artifacts.
+
+```
+lit lmstudio-ocr-pipeline -p <path> -o <output-dir> [options]
+```
+
+Examples:
+
+```bash
+lit lmstudio-ocr-pipeline \
+  --path document.pdf \
+  --output ./glm-ocr-output \
+  --mode auto \
+  --target-pages "1-3"
+```
+
+Output includes page images, raw LM Studio responses, normalized OCR artifacts, LiteParse `/ocr` result JSON, and final Markdown/JSON.

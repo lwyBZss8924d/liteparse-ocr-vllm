@@ -11,8 +11,11 @@ dependencies = [
     "pypdf>=6.6.2",
     "markitdown[all]",
     "rapidfuzz>=3.14.3",
-    "liteparse @ file:///${PROJECT_ROOT}/../packages/python",
+    "liteparse",
 ]
+
+[tool.uv.sources]
+liteparse = { path = "../packages/python", editable = true }
 
 [project.scripts]
 lp-evaluate = "liteparse_eval.evaluation:main"

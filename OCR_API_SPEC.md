@@ -12,6 +12,8 @@ LiteParse expects a simple HTTP endpoint that accepts an image and returns text 
 POST /ocr
 ```
 
+Custom servers may expose additional endpoints such as `/health` or `/ocr/analyze`, but LiteParse's built-in HTTP OCR client only relies on `POST /ocr`.
+
 ## Request Format
 
 **Content-Type:** `multipart/form-data`
@@ -55,6 +57,8 @@ Your server should map these to whatever format your underlying OCR engine expec
   ]
 }
 ```
+
+Servers may include extra top-level metadata such as `engine`, `model`, `mode`, or `warnings`. They must not replace or remove the `results` array, and every item in `results` must keep the `text`, `bbox`, and `confidence` fields described below.
 
 **Fields:**
 
@@ -145,6 +149,34 @@ See the `/ocr` directory for reference implementations:
 
 - `ocr/easyocr/` - Wrapper for EasyOCR
 - `ocr/paddleocr/` - Wrapper for PaddleOCR
+- `ocr/glmocr/` - GLM-OCR SDK pipeline adapter with PP-DocLayout layout boxes
+- `ocr/lmstudio/` - Documentation for the LM Studio GLM-OCR wrapper server
+- `lit codex-ocr-server` - OpenAI Codex multimodal OCR server and advanced artifact endpoint
+
+## Advanced OCR Servers
+
+Some OCR backends, including GLM-OCR SDK pipeline servers and the Codex OCR server, can return richer document understanding artifacts such as Markdown, page metadata, table HTML, formula LaTeX, layout regions, segmented assets, annotations, and normalized `bbox_2d` or `normalized_1000` coordinates. These advanced artifacts are useful for agent pipelines, but the `/ocr` endpoint must still normalize them into the baseline LiteParse response:
+
+```json
+{
+  "results": [
+    {
+      "text": "recognized text",
+      "bbox": [10, 20, 200, 60],
+      "confidence": 1.0
+    }
+  ],
+  "engine": "glmocr-pipeline",
+  "model": "glm-ocr-g32-mixed_4_8-mlx",
+  "warnings": []
+}
+```
+
+When an advanced backend returns normalized `bbox_2d` or `normalized_1000` values in a `0..1000` coordinate space, the server must convert them to image pixel coordinates before returning `results[].bbox`. For official GLM-OCR SDK pipeline integrations, those boxes should come from the SDK layout stage, not from prompt-inferred whole-page model output. Codex OCR boxes are model-inferred visual localization evidence and are reported with warnings such as `codex_bboxes_are_model_inferred`.
+
+If no reliable bounding boxes are available, a direct OCR wrapper may either return deterministic fallback boxes or return an empty `results` array in strict mode. A GLM-OCR SDK pipeline adapter should not silently treat fallback line boxes as official layout output; it should drop unboxed regions and report warnings such as `region_bbox_missing` or `degraded_no_layout_bbox`.
+
+Advanced servers may expose `POST /ocr/analyze` for the full artifact while keeping `POST /ocr` backward-compatible. The Codex OCR server returns a full artifact from `/ocr/analyze` with page Markdown, `page_metadata`, `layout_regions`, `assets`, `annotations`, `conversion.results`, model metadata, and provenance.
 
 ## Testing Your Server
 

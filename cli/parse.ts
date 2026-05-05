@@ -7,6 +7,9 @@ import { LiteParse } from "../src/core/parser.js";
 import { LiteParseConfig, OutputFormat } from "../src/core/types.js";
 import { performance } from "perf_hooks";
 import pkg from "../package.json" with { type: "json" };
+import { registerLmStudioOcrCommands } from "./lmstudio-ocr.js";
+import { registerGlmOcrCommands } from "./glmocr-ocr.js";
+import { registerCodexOcrCommands } from "./codex-ocr.js";
 
 const DEFAULT_MAX_PAGES = 10000;
 const DEFAULT_DPI = 150;
@@ -71,6 +74,10 @@ program
   .name("lit")
   .description("OSS document parsing tool (supports PDF, DOCX, XLSX, images, and more)")
   .version(pkg.version);
+
+registerLmStudioOcrCommands(program);
+registerGlmOcrCommands(program);
+registerCodexOcrCommands(program);
 
 program
   .command("parse <file>")

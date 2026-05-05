@@ -1,0 +1,148 @@
+{
+  "name": "liteparse-cli-skills",
+  "source_root": "skills/liteparse-cli-tools-custom-collection",
+  "installed_root": "$HOME/.agents/skills/liteparse-cli-tools-custom-collection",
+  "sync_mode": "copy_on_validated_sync",
+  "forbidden_repo_autoload_roots": [
+    ".agents/skills/liteparse-cli-tools-custom-collection",
+    ".codex/skills/liteparse-cli-tools-custom-collection"
+  ],
+  "expected_skill_files": [
+    "SKILL.md",
+    "agents/openai.yaml",
+    "liteparse-cli-discovery/SKILL.md",
+    "liteparse-cli-discovery/agents/openai.yaml",
+    "liteparse-cli-pipelines/SKILL.md",
+    "liteparse-cli-pipelines/agents/openai.yaml",
+    "liteparse-ocr-server/SKILL.md",
+    "liteparse-ocr-server/agents/openai.yaml"
+  ],
+  "cli": {
+    "binary": "lit",
+    "required_commands": [
+      "codex-ocr",
+      "codex-ocr-server",
+      "codex-ocr-pipeline",
+      "glmocr-ocr-server",
+      "glmocr-pipeline",
+      "lmstudio-ocr-server",
+      "lmstudio-ocr",
+      "lmstudio-ocr-pipeline",
+      "lmstudio-openai-adapter"
+    ],
+    "command_help_options": {
+      "codex-ocr": [
+        "--codex-home",
+        "--backend",
+        "--reasoning-effort",
+        "--model",
+        "--include-raw",
+        "--strict-bbox"
+      ],
+      "codex-ocr-server": [
+        "--codex-home",
+        "--backend",
+        "--reasoning-effort",
+        "--model",
+        "--include-raw",
+        "--strict-bbox"
+      ],
+      "codex-ocr-pipeline": [
+        "--codex-home",
+        "--backend",
+        "--reasoning-effort",
+        "--model",
+        "--include-raw",
+        "--strict-bbox",
+        "--batch-mode",
+        "--target-pages",
+        "--dpi",
+        "--no-save"
+      ]
+    }
+  },
+  "required_terms": [
+    "POST /ocr",
+    "POST /ocr/analyze",
+    "results[].text",
+    "results[].bbox",
+    "results[].confidence",
+    "LITEPARSE_CODEX_HOME",
+    "LITEPARSE_CODEX_OCR_MODEL",
+    "LITEPARSE_CODEX_OCR_REASONING",
+    "codex_bboxes_are_model_inferred",
+    "$HOME/.codex-test",
+    "final/document.md",
+    "final/document.json"
+  ],
+  "docs": {
+    "required_files": [
+      "AGENTS.md",
+      "OCR_API_SPEC.md",
+      "README.md",
+      "cli/README.md",
+      "ocr/README.md",
+      "src/engines/ocr/README.md",
+      "docs/src/content/docs/liteparse/cli-reference.md",
+      "docs/src/content/docs/liteparse/guides/ocr.md"
+    ],
+    "required_terms": {
+      "AGENTS.md": [
+        "skills/liteparse-cli-tools-custom-collection",
+        "npm run validate:agent-skills",
+        "npm run sync:agent-skills:dry-run"
+      ],
+      "OCR_API_SPEC.md": [
+        "POST /ocr",
+        "POST /ocr/analyze",
+        "results[].text",
+        "results[].bbox",
+        "results[].confidence",
+        "codex_bboxes_are_model_inferred"
+      ],
+      "README.md": [
+        "glmocr-pipeline",
+        "codex-ocr-pipeline",
+        "final/document.md",
+        "final/document.json",
+        "LITEPARSE_CODEX_HOME"
+      ],
+      "cli/README.md": [
+        "lit codex-ocr-server",
+        "lit codex-ocr-pipeline",
+        "lit glmocr-pipeline",
+        "lit lmstudio-openai-adapter",
+        "POST /ocr/analyze"
+      ],
+      "ocr/README.md": [
+        "POST /ocr/analyze",
+        "LITEPARSE_CODEX_HOME",
+        "$HOME/.codex-test"
+      ],
+      "src/engines/ocr/README.md": [
+        "POST /ocr/analyze",
+        "codex_bboxes_are_model_inferred",
+        "--strict-bbox"
+      ],
+      "docs/src/content/docs/liteparse/cli-reference.md": [
+        "lit codex-ocr-pipeline",
+        "lit glmocr-pipeline",
+        "POST /ocr/analyze"
+      ],
+      "docs/src/content/docs/liteparse/guides/ocr.md": [
+        "lit codex-ocr-pipeline",
+        "final/document.md",
+        "final/document.json",
+        "codex_bboxes_are_model_inferred"
+      ]
+    }
+  },
+  "projection_targets": [
+    "$HOME/.agents/skills/liteparse-cli-tools-custom-collection",
+    "$HOME/.codex/skills/liteparse-cli-tools-custom-collection",
+    "$HOME/.codex-test/skills/liteparse-cli-tools-custom-collection",
+    "$HOME/.claude/skills/liteparse-cli-tools-custom-collection",
+    "$HOME/forge/skills/liteparse-cli-tools-custom-collection",
+    "$HOME/.gemini/skills/liteparse-cli-tools-custom-collection"
+  ]
+}

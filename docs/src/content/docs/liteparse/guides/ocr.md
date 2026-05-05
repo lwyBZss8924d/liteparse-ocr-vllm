@@ -67,6 +67,88 @@ python server.py
 lit parse document.pdf --ocr-server-url http://localhost:8828/ocr
 ```
 
+### GLM-OCR SDK Pipeline
+
+Use the official GLM-OCR SDK pipeline when you need layout boxes from PP-DocLayout, plus local GLM-OCR crop recognition through LM Studio or another model runtime.
+
+```bash
+# Starts http://127.0.0.1:8831/ocr
+# Auto-loads an installed LM Studio glm-ocr model with lms load when needed.
+lit glmocr-ocr-server
+
+# Parse through the standard LiteParse HTTP OCR contract
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8831/ocr --format json
+```
+
+Advanced artifacts can be generated without `lit parse`:
+
+```bash
+lit glmocr-pipeline \
+  --path document.pdf \
+  --output ./glmocr-output \
+  --target-pages "1-3" \
+  --layout-device cpu
+```
+
+The pipeline backend does not synthesize fallback line boxes. If GLM-OCR SDK regions do not include valid boxes, the affected regions are dropped and warnings report the degradation.
+
+### LM Studio GLM-OCR Direct Wrapper
+
+LiteParse can also expose a local LM Studio `glm-ocr` model directly as a Custom HTTP OCR server that follows the same `/ocr` contract as EasyOCR and PaddleOCR.
+
+```bash
+# Starts http://127.0.0.1:8830/ocr
+# Auto-loads an installed glm-ocr model with lms load when needed.
+lit lmstudio-ocr-server
+
+# Parse through the standard LiteParse HTTP OCR contract
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8830/ocr --format json
+```
+
+Use `--no-auto-load` if you want the command to fail instead of running `lms load`. Use `--strict-bbox` if model output without bounding boxes should be dropped instead of converted into fallback line boxes.
+
+Advanced GLM-OCR artifacts can be generated without `lit parse`:
+
+```bash
+lit lmstudio-ocr page.png --mode layout --json
+
+lit lmstudio-ocr-pipeline \
+  --path document.pdf \
+  --output ./glm-ocr-output \
+  --mode auto
+```
+
+Direct mode sends the whole page or crop directly to LM Studio and may use fallback line boxes. Prefer `glmocr-ocr-server` for official GLM-OCR layout bbox fidelity.
+
+### Codex OCR Server and Pipeline
+
+LiteParse can expose OpenAI Codex multimodal page understanding as a Custom HTTP OCR server while keeping the same `/ocr` contract used by EasyOCR, PaddleOCR, GLM-OCR, and LM Studio.
+
+```bash
+# Starts http://127.0.0.1:8833/ocr
+# Use the separate test Codex state requested for live development.
+lit codex-ocr-server --codex-home "$HOME/.codex-test"
+
+# Parse through the standard LiteParse HTTP OCR contract
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
+```
+
+`POST /ocr/analyze` returns the full Codex artifact: page Markdown, page metadata, layout regions, segmented assets, annotations, LiteParse conversion results, model metadata, and provenance. The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper.
+
+Advanced Codex artifacts can be generated without `lit parse`:
+
+```bash
+lit codex-ocr page.png --codex-home "$HOME/.codex-test" --model gpt-5.4-mini --json
+
+lit codex-ocr-pipeline \
+  --path document.pdf \
+  --output ./codex-ocr-output \
+  --target-pages "1-3" \
+  --codex-home "$HOME/.codex-test"
+```
+
+The pipeline writes `pages/`, `codex/`, `liteparse/`, `assets/<type>/`, `annotations/`, `final/document.md`, `final/document.json`, and `manifest.json`. Codex bounding boxes are model-inferred and include `codex_bboxes_are_model_inferred` warnings; use `--strict-bbox` to drop regions without usable boxes.
+
 ### Parallel OCR workers
 
 LiteParse OCRs multiple pages in parallel. By default, it uses one fewer worker than your CPU core count. Override this with:

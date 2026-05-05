@@ -14,6 +14,7 @@ LiteParse is designed specifically for use cases that require fast, accurate tex
 - **Parse PDFs** with precise spatial layout. Text comes back positioned where it appears on the page
 - **Extract bounding boxes** for every text line, ready for downstream processing or visualization
 - **OCR scanned documents** using built-in Tesseract.js or plug in your own OCR server
+- **Run local GLM-OCR** through the official SDK layout pipeline or a direct LM Studio wrapper as a LiteParse-compatible Custom HTTP OCR server
 - **Parse Office files and images** with support for DOCX, XLSX, PPTX, PNG, JPG, and more via automatic conversion
 - **Screenshot PDF pages** as high-quality images for LLM-based workflows
 - **Use from TypeScript, Python, or the CLI** — whatever fits your stack

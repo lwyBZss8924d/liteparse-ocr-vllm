@@ -143,6 +143,7 @@ def _build_parse_cli_args(
     target_pages: Optional[str],
     dpi: int,
     precise_bounding_box: bool,
+    skip_diagonal_text: bool,
     preserve_very_small_text: bool,
     password: Optional[str],
 ) -> List[str]:
@@ -168,6 +169,10 @@ def _build_parse_cli_args(
 
     if not precise_bounding_box:
         args.append("--no-precise-bbox")
+
+    # Backward-compatible no-op for eval harnesses that pass this option.
+    # The Node CLI does not currently expose a diagonal-text filter.
+    _ = skip_diagonal_text
 
     if preserve_very_small_text:
         args.append("--preserve-small-text")
@@ -400,6 +405,7 @@ class LiteParse:
         target_pages: Optional[str] = None,
         dpi: int = 150,
         precise_bounding_box: bool = True,
+        skip_diagonal_text: bool = False,
         preserve_very_small_text: bool = False,
         password: Optional[str] = None,
         timeout: Optional[float] = None,
@@ -418,6 +424,7 @@ class LiteParse:
             target_pages: Specific pages to parse (e.g., "1-5,10,15-20")
             dpi: DPI for rendering (affects OCR quality)
             precise_bounding_box: Whether to compute precise bounding boxes
+            skip_diagonal_text: Backward-compatible no-op. The Node CLI does not currently expose this filter.
             preserve_very_small_text: Whether to preserve very small text
             password: Password for encrypted/protected documents
             timeout: Timeout in seconds (None for no timeout)
@@ -445,6 +452,7 @@ class LiteParse:
             target_pages=target_pages,
             dpi=dpi,
             precise_bounding_box=precise_bounding_box,
+            skip_diagonal_text=skip_diagonal_text,
             preserve_very_small_text=preserve_very_small_text,
             password=password,
         )
@@ -477,6 +485,7 @@ class LiteParse:
         target_pages: Optional[str] = None,
         dpi: int = 150,
         precise_bounding_box: bool = True,
+        skip_diagonal_text: bool = False,
         preserve_very_small_text: bool = False,
         password: Optional[str] = None,
         timeout: Optional[float] = None,
@@ -495,6 +504,7 @@ class LiteParse:
             target_pages: Specific pages to parse (e.g., "1-5,10,15-20")
             dpi: DPI for rendering (affects OCR quality)
             precise_bounding_box: Whether to compute precise bounding boxes
+            skip_diagonal_text: Backward-compatible no-op. The Node CLI does not currently expose this filter.
             preserve_very_small_text: Whether to preserve very small text
             password: Password for encrypted/protected documents
             timeout: Timeout in seconds (None for no timeout)
@@ -521,6 +531,7 @@ class LiteParse:
             target_pages=target_pages,
             dpi=dpi,
             precise_bounding_box=precise_bounding_box,
+            skip_diagonal_text=skip_diagonal_text,
             preserve_very_small_text=preserve_very_small_text,
             password=password,
         )

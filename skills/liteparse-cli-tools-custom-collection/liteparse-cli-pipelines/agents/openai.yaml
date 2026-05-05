@@ -1,0 +1,4 @@
+interface:
+  display_name: "LiteParse CLI Pipelines"
+  short_description: "Run LiteParse parse, screenshot, OCR, GLM-OCR, and Codex OCR flows"
+  default_prompt: "Use $liteparse-cli-pipelines to run a LiteParse shell workflow, OCR server flow, GLM-OCR SDK pipeline, or Codex OCR pipeline for this document task."

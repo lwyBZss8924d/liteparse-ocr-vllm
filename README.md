@@ -26,6 +26,7 @@ hard stuff so your models see clean, structured data and markdown.
 - **Flexible OCR System**:
   - **Built-in**: Tesseract.js (zero setup, works out of the box!)
   - **HTTP Servers**: Plug in any OCR server (EasyOCR, PaddleOCR, custom)
+  - **LM Studio GLM-OCR**: Run `glm-ocr` locally through a LiteParse-compatible HTTP OCR server
   - **Standard API**: Simple, well-defined OCR API specification
 - **Screenshot Generation**: Generate high-quality page screenshots for LLM agents
 - **Multiple Output Formats**: JSON and Text
@@ -100,6 +101,14 @@ lit parse document.pdf --no-ocr
 
 # Parse a remote PDF
 curl -sL https://example.com/report.pdf | lit parse -
+
+# Parse with official GLM-OCR SDK layout pipeline as a LiteParse OCR server
+lit glmocr-ocr-server
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8831/ocr --format json
+
+# Parse with Codex OCR server for multimodal page understanding
+lit codex-ocr-server --codex-home "$HOME/.codex-test"
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
 ```
 
 ### Batch Parsing
@@ -278,6 +287,9 @@ For higher accuracy or better performance, you can use an HTTP OCR server. We pr
 
 - [EasyOCR](ocr/easyocr/README.md)
 - [PaddleOCR](ocr/paddleocr/README.md)
+- [GLM-OCR SDK Pipeline](ocr/glmocr/README.md)
+- [LM Studio GLM-OCR direct wrapper](ocr/lmstudio/README.md)
+- Codex OCR CLI/server (`lit codex-ocr-server`)
 
 You can integrate any OCR service by implementing the simple LiteParse OCR API specification (see [`OCR_API_SPEC.md`](OCR_API_SPEC.md)).
 
@@ -289,6 +301,76 @@ The API requires:
 See the example servers in `ocr/easyocr/` and `ocr/paddleocr/` as templates.
 
 For the complete OCR API specification, see [`OCR_API_SPEC.md`](OCR_API_SPEC.md).
+
+### Optional: GLM-OCR SDK Pipeline
+
+For layout/table/formula-heavy documents, LiteParse can expose the official GLM-OCR SDK self-hosted pipeline as a Custom HTTP OCR server. This path uses PP-DocLayout for layout boxes, then calls a model runtime such as LM Studio for crop OCR:
+
+```bash
+# Python service path, matching the EasyOCR/PaddleOCR adapter style:
+cd ocr/glmocr
+uv run server.py
+
+# Or Node-managed wrapper:
+# Starts http://127.0.0.1:8831/ocr
+# If the model is installed but not loaded, this runs:
+# lms load glm-ocr-g32-mixed_4_8-mlx --identifier glm-ocr-g32-mixed_4_8-mlx -y
+lit glmocr-ocr-server
+
+lit parse document.pdf \
+  --ocr-server-url http://127.0.0.1:8831/ocr \
+  --format json
+```
+
+Advanced document-pipeline tooling writes page images, raw GLM-OCR SDK artifacts, LiteParse `/ocr` result JSON, and final Markdown/JSON:
+
+```bash
+lit glmocr-pipeline \
+  --path document.pdf \
+  --output ./glmocr-output \
+  --target-pages "1-3"
+```
+
+Use `--no-auto-load` when you want LiteParse to fail fast instead of calling `lms load`. Use `--model-runtime openai-compatible --ocr-api-url <url>` or `--model-runtime ollama --ocr-api-url <url>` when the GLM-OCR model is hosted outside LM Studio.
+
+### Optional: LM Studio GLM-OCR Direct Wrapper
+
+The legacy direct wrapper remains available for quick single-image or OCR/text smoke tests:
+
+```bash
+lit lmstudio-ocr page.png --mode text --json
+lit lmstudio-ocr-server
+```
+
+Direct mode sends the page or crop straight to LM Studio and may produce fallback line boxes when the model output has no reliable `bbox_2d`. Use `glmocr-ocr-server` or `glmocr-pipeline` when official GLM-OCR layout bboxes are required.
+
+### Optional: Codex OCR Server and Pipeline
+
+For agentic multimodal OCR, LiteParse can expose OpenAI Codex as a Custom HTTP OCR server while preserving the standard `/ocr` response shape:
+
+```bash
+# Uses @openai/codex-sdk by default.
+# Live development/test state should use $HOME/.codex-test.
+lit codex-ocr-server --codex-home "$HOME/.codex-test"
+
+lit parse document.pdf \
+  --ocr-server-url http://127.0.0.1:8833/ocr \
+  --format json
+```
+
+The Codex server also exposes `POST /ocr/analyze` for a full advanced artifact with page Markdown, page metadata, layout regions, segmented assets, annotations, conversion results, model metadata, and provenance. Use `--backend app-server` to try the experimental `codex app-server` JSON-RPC wrapper instead of the default SDK path.
+
+Advanced document-pipeline tooling renders supported documents and images into page PNGs, runs Codex OCR per page, and writes page artifacts plus final Markdown/JSON:
+
+```bash
+lit codex-ocr-pipeline \
+  --path document.pdf \
+  --output ./codex-ocr-output \
+  --target-pages "1-3" \
+  --codex-home "$HOME/.codex-test"
+```
+
+The artifact tree includes `pages/`, `codex/`, `liteparse/`, `assets/<type>/`, `annotations/`, `final/document.md`, `final/document.json`, and `manifest.json`. Final Markdown includes a LiteParse structured OCR context section that promotes page metadata, selected layout regions, and segmented asset details for downstream QA. Codex bounding boxes are model-inferred visual localization evidence and include `codex_bboxes_are_model_inferred` warnings; use `--strict-bbox` to drop regions without usable boxes.
 
 ## Multi-Format Input Support
 
@@ -338,6 +420,13 @@ choco install imagemagick.app # might require admin permissions
 |----------|-------------|
 | `TESSDATA_PREFIX` | Path to a directory containing Tesseract `.traineddata` files. Used for offline/air-gapped environments where Tesseract.js cannot download language data from the internet. |
 | `LITEPARSE_TMPDIR` | Override the temp directory used for format conversion and intermediate files. Defaults to the OS temp directory (`os.tmpdir()`). Useful in containerized or read-only filesystem environments. |
+| `LITEPARSE_LMSTUDIO_BASE_URL` | Base URL for LM Studio GLM-OCR tooling. Defaults to `http://localhost:1234`. |
+| `LITEPARSE_GLM_OCR_MODEL` | LM Studio model identifier. Defaults to `glm-ocr-g32-mixed_4_8-mlx`. |
+| `LITEPARSE_LMSTUDIO_API_KEY` | Optional bearer token for LM Studio-compatible deployments. |
+| `LITEPARSE_LMSTUDIO_AUTO_LOAD` | Set to `0` or `false` to disable automatic `lms load` for local LM Studio models. |
+| `LITEPARSE_CODEX_HOME` | Codex state directory for Codex OCR. Use `$HOME/.codex-test` for live development/testing so OAuth tokens and config remain separate from normal Codex state. |
+| `LITEPARSE_CODEX_OCR_MODEL` | Default Codex OCR model. Defaults to `gpt-5.5`; use `gpt-5.4-mini` for cheaper smoke tests. |
+| `LITEPARSE_CODEX_OCR_REASONING` | Default Codex OCR reasoning effort. Defaults to `medium`; the pipeline command defaults to `high`. |
 
 ## Configuration
 

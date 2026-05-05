@@ -6,19 +6,21 @@ These servers allow you to use alternative OCR engines instead of the built-in T
 
 ## Why Use an External OCR Server?
 
-| Feature | Tesseract.js (built-in) | EasyOCR | PaddleOCR |
-|---------|-------------------------|---------|-----------|
-| Setup | Zero (included) | uv | uv |
-| Speed | Moderate | Moderate | Fast (2-3x) |
-| Accuracy (Latin) | Good | Good | Good |
-| Accuracy (CJK) | Fair | Good | Excellent |
-| Languages | 100+ | 80+ | 80+ |
-| Memory | In-process | Separate | Separate |
+| Feature | Tesseract.js (built-in) | EasyOCR | PaddleOCR | GLM-OCR SDK Pipeline | Codex OCR |
+|---------|-------------------------|---------|-----------|----------------------|-----------|
+| Setup | Zero (included) | uv | uv | GLM-OCR SDK + model runtime | Codex CLI auth/config |
+| Speed | Moderate | Moderate | Fast (2-3x) | Layout/model dependent | Model/API dependent |
+| Accuracy (Latin) | Good | Good | Good | Strong document OCR/VLM | Strong multimodal OCR |
+| Accuracy (CJK) | Fair | Good | Excellent | Strong document OCR/VLM | Model dependent |
+| Layout bboxes | OCR word/line boxes | OCR boxes | OCR boxes | PP-DocLayout `bbox_2d` | Model-inferred `normalized_1000` |
+| Memory | In-process | Separate | Separate | Separate Python/model processes | Separate Codex CLI process |
 
 **Recommendations:**
 - **Quick start**: Use built-in Tesseract (no setup)
 - **Asian languages**: Use PaddleOCR (best CJK support)
 - **General use**: EasyOCR (good balance)
+- **Layout/table/formula-heavy local VLM OCR**: Use GLM-OCR SDK Pipeline
+- **Agentic multimodal page understanding**: Use Codex OCR for Markdown, metadata, layout, assets, and annotations
 
 ## Available Servers
 
@@ -34,6 +36,31 @@ Flask server wrapping PaddleOCR library.
 - Excellent for Chinese, Japanese, Korean
 - 2-3x faster than EasyOCR
 
+### [glmocr/](./glmocr/)
+Python service and CLI wrapper backed by the official GLM-OCR SDK self-hosted pipeline.
+- Port: **8831**
+- Implements `POST /ocr` exactly as required by `OCR_API_SPEC.md`
+- Uses PP-DocLayout for real layout `bbox_2d`, then calls LM Studio/vLLM/SGLang/Ollama for crop OCR
+- Python dependencies are declared in `ocr/glmocr/pyproject.toml` and managed with `uv run server.py`, matching the EasyOCR and PaddleOCR adapters
+- Auto-loads the local LM Studio model with `lms load` when LM Studio is the model runtime
+
+### [lmstudio/](./lmstudio/)
+Node server exposed by the LiteParse CLI and backed by LM Studio `glm-ocr`.
+- Port: **8830**
+- Implements `POST /ocr` exactly as required by `OCR_API_SPEC.md`
+- Direct page/crop wrapper for quick OCR and model smoke tests
+- Auto-loads the local LM Studio model with `lms load` unless `--no-auto-load` is used
+- May use fallback line boxes when the direct model response lacks parseable `bbox_2d`
+
+### Codex OCR CLI/server
+Node server exposed by the LiteParse CLI and backed by OpenAI Codex multimodal page understanding.
+- Port: **8833**
+- Implements `POST /ocr` exactly as required by `OCR_API_SPEC.md`
+- Exposes `POST /ocr/analyze` for the full advanced artifact: Markdown, page metadata, layout regions, segmented assets, annotations, conversion results, model metadata, and provenance
+- Uses `@openai/codex-sdk` by default and supports an experimental `codex app-server` backend with `--backend app-server`
+- Live development/test runs should pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME=$HOME/.codex-test`
+- Bounding boxes are model-inferred and reported with warnings; use `--strict-bbox` to drop regions without usable boxes
+
 ## Quick Start
 
 ```bash
@@ -44,6 +71,19 @@ uv run server.py
 # OR start PaddleOCR server
 cd ocr/paddleocr
 uv run server.py
+
+# OR start official GLM-OCR SDK pipeline server using uv-managed Python deps
+cd ocr/glmocr
+uv run server.py
+
+# OR start the Node-managed GLM-OCR SDK pipeline wrapper from the LiteParse CLI
+lit glmocr-ocr-server
+
+# OR start the LM Studio direct wrapper
+lit lmstudio-ocr-server
+
+# OR start the Codex OCR server
+lit codex-ocr-server --codex-home "$HOME/.codex-test"
 ```
 
 Then use with LiteParse:
@@ -51,6 +91,15 @@ Then use with LiteParse:
 ```bash
 # CLI
 lit parse document.pdf --ocr-server-url http://localhost:8828/ocr
+
+# GLM-OCR SDK Pipeline
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8831/ocr --format json
+
+# LM Studio direct wrapper
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8830/ocr --format json
+
+# Codex OCR
+lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
 
 # Code
 const parser = new LiteParse({

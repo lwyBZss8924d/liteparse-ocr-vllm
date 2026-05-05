@@ -1,0 +1,4 @@
+interface:
+  display_name: "LiteParse OCR Server"
+  short_description: "Use HTTP OCR servers, GLM-OCR SDK, and Codex OCR with LiteParse"
+  default_prompt: "Use $liteparse-ocr-server to connect LiteParse to an HTTP OCR server, GLM-OCR SDK pipeline, LM Studio direct OCR server, or Codex OCR server for this document task."

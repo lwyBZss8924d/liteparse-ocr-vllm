@@ -1,0 +1,4 @@
+interface:
+  display_name: "LiteParse CLI Workflows"
+  short_description: "Discover LiteParse CLI, OCR, GLM-OCR, and Codex OCR workflows"
+  default_prompt: "Use $liteparse-cli-tools-custom-collection to choose the right LiteParse CLI, OCR server, GLM-OCR pipeline, or Codex OCR workflow for this document task."

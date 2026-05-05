@@ -1,0 +1,4 @@
+interface:
+  display_name: "LiteParse CLI Discovery"
+  short_description: "Choose LiteParse commands, OCR backends, and modes"
+  default_prompt: "Use $liteparse-cli-discovery to choose the right LiteParse CLI command, output mode, OCR server, GLM-OCR pipeline, or Codex OCR pipeline for this document task."

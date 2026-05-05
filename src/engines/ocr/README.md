@@ -84,3 +84,47 @@ Simple sequential processing rather than batching because:
 
 **Example Servers:**
 See `ocr/easyocr/` and `ocr/paddleocr/` for reference implementations.
+
+---
+
+### glmocr.ts / glmocr-server.ts / glmocr-runtime.ts
+**Official GLM-OCR SDK pipeline adapter.**
+
+These modules expose the GLM-OCR SDK self-hosted pipeline through LiteParse's standard `/ocr` contract.
+
+**Key behavior:**
+- `glmocr-runtime.ts` starts or connects to `python -m glmocr.server` without mutating GLM-OCR source config files.
+- `glmocr-server.ts` accepts multipart `POST /ocr` and converts SDK `json_result` / `layout_details` into LiteParse `OcrResult[]`.
+- `glmocr.ts` converts normalized `bbox_2d` values on the `0..1000` GLM-OCR scale into pixel bboxes.
+- The default model runtime is LM Studio; the runtime can use LM Studio's OpenAI endpoint or the LiteParse OpenAI adapter for LM Studio native `/api/v1/chat`.
+
+This path should be used when official PP-DocLayout layout boxes are required. It does not synthesize fallback line boxes.
+
+---
+
+### lmstudio.ts / lmstudio-server.ts
+**Direct LM Studio GLM-OCR wrapper.**
+
+These modules send a page or crop directly to LM Studio. They are useful for quick OCR/model smoke tests and raw artifacts, but model output without parseable `bbox_2d` may be converted into fallback line boxes unless strict bbox mode is enabled.
+
+---
+
+### codex.ts / codex-server.ts
+**OpenAI Codex multimodal OCR wrapper.**
+
+These modules expose Codex page/image understanding through LiteParse's standard `/ocr` contract and a richer `/ocr/analyze` artifact endpoint.
+
+**Key behavior:**
+- `codex.ts` uses `@openai/codex-sdk` by default. The SDK wraps the local `codex` CLI and passes images as `local_image` inputs.
+- `codex.ts` also supports an experimental `codex app-server` backend for clients that need JSON-RPC app-server integration.
+- `codex-server.ts` accepts multipart `POST /ocr` and normalizes Codex layout regions into `OcrResult[]`.
+- `POST /ocr/analyze` returns the full Codex artifact: page Markdown, `page_metadata`, `layout_regions`, segmented `assets`, `annotations`, conversion results, model metadata, and provenance.
+- Codex bboxes use the `normalized_1000` schema by default and are converted to pixel boxes before `/ocr` responses.
+
+Codex bboxes are model-inferred visual localization evidence, not official layout-detector boxes. Artifacts keep `codex_bboxes_are_model_inferred` warnings, and `--strict-bbox` drops regions that do not include usable boxes.
+
+For live development and tests, use a separate Codex state directory:
+
+```bash
+lit codex-ocr page.png --codex-home "$HOME/.codex-test" --model gpt-5.4-mini --json
+```
