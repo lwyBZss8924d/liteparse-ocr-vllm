@@ -1,14 +1,29 @@
-# LiteParse - Agent Documentation
+# LiteParse OCR vLLM - Agent Documentation
 
 > This file provides comprehensive context for AI coding agents working on this codebase. Each subdirectory contains its own README with file-specific documentation.
 
+## Fork Identity and Branch Discipline
+
+This repository is an independent custom OCR fork of upstream `run-llama/liteparse`.
+
+- Fork remote: `origin = https://github.com/lwyBZss8924d/liteparse-ocr-vllm.git`
+- Upstream remote: `upstream = https://github.com/run-llama/liteparse.git`
+- Custom branch: `custom/vllm-ocr-main`
+- Upstream mirror branch: `main`
+- Custom npm package: `@arthur/liteparse-vllm`
+- Current custom version pattern: upstream version plus custom suffix, for example `1.5.3-custom.0`
+
+Keep `main` as an upstream mirror. Do not publish custom OCR releases from `main`; merge upstream `main` into `custom/vllm-ocr-main` and publish custom tags such as `custom-v1.5.3-ocr.0` only from the custom branch. When README, packaging, release, or CI identity changes, update this AGENTS.md file in the same change so future agents do not fall back to upstream assumptions.
+
 ## Project Overview
 
-**LiteParse** is an open-source PDF parsing library focused on fast, lightweight document processing with spatial text extraction. It runs entirely locally with zero cloud dependencies by default.
+**LiteParse OCR vLLM** keeps LiteParse's fast local PDF parsing and spatial text extraction, then layers custom OCR tooling for GLM-OCR SDK pipelines, vLLM offline packaging, LM Studio diagnostics, Codex OCR diagnostics, and repo-versioned agent skills. Baseline parsing and built-in OCR remain local by default; Codex OCR is online/authenticated diagnostics and must be documented as such.
 
 ### Key Capabilities
 - **Spatial text extraction** with precise bounding boxes
 - **Flexible OCR** (built-in Tesseract.js or pluggable HTTP servers)
+- **Advanced OCR tooling** through GLM-OCR SDK, LM Studio, and Codex OCR wrappers
+- **Offline delivery path** through `Dockerfile.glmocr-offline` and Linux x64 npm tgz packaging
 - **Multi-format support** (PDFs, DOCX, XLSX, PPTX, images via conversion)
 - **TypeScript/Node.js** with both library and CLI interfaces
 
@@ -20,7 +35,7 @@ liteparse/
 │   ├── core/           # Configuration, types, main orchestrator
 │   ├── engines/        # Pluggable PDF and OCR engines
 │   │   ├── pdf/        # PDF parsing engines (PDF.js, PDFium)
-│   │   └── ocr/        # OCR engines (Tesseract, HTTP)
+│   │   └── ocr/        # OCR engines and adapters (Tesseract, HTTP, GLM-OCR, LM Studio, Codex)
 │   ├── processing/     # Text extraction and spatial analysis
 │   ├── output/         # Output formatters (JSON, text)
 │   ├── conversion/     # Multi-format conversion to PDF
@@ -33,7 +48,8 @@ liteparse/
 │   ├── glmocr/         # GLM-OCR SDK pipeline server docs
 │   ├── lmstudio/       # LM Studio GLM-OCR wrapper server docs
 │   └── paddleocr/      # PaddleOCR wrapper server
-├── skills/             # Repo-versioned agent skills source and harness spec
+├── skills/             # Repo-versioned agent skills source and harness spec/projection contract
+├── docker/             # Offline vLLM GLM-OCR entrypoint and smoke scripts
 └── dist/               # Compiled JavaScript output
 ```
 
@@ -73,6 +89,21 @@ Uses a default-first approach where users only override what they need. Configur
 ### 5. Format Conversion via External Tools
 Rather than implementing format parsers, LiteParse converts non-PDF formats using system tools (LibreOffice, ImageMagick) into a single format (PDF). This provides broad format support with minimal code.
 
+### 6. Codex OCR Diagnostics Boundary
+Codex OCR is implemented in `src/engines/ocr/codex.ts` and `src/engines/ocr/codex-server.ts`, with CLI wiring in `cli/codex-ocr.ts`.
+
+- `codex.ts` owns Codex SDK/app-server invocation, prompt/schema handling, raw response preservation, and conversion from advanced artifacts into OCR results.
+- `codex-server.ts` owns HTTP serving for `GET /health`, multipart `POST /ocr`, and multipart `POST /ocr/analyze`.
+- `POST /ocr` must keep the LiteParse OCR contract: multipart `file`, optional `language`, and JSON `results[].text`, `results[].bbox`, `results[].confidence`.
+- `POST /ocr/analyze` may return the richer Codex artifact: Markdown, page metadata, layout regions, assets, annotations, conversion metadata, model provenance, and warnings.
+- Codex bounding boxes are model-inferred visual localization evidence, not official layout-detector boxes. Preserve `codex_bboxes_are_model_inferred` warnings and keep `--strict-bbox` behavior available.
+- Live development and tests should use `--codex-home "$HOME/.codex-test"` or `LITEPARSE_CODEX_HOME=$HOME/.codex-test` so auth/config are separated from normal Codex state.
+
+### 7. Custom Packaging and CI
+The custom npm package is `@arthur/liteparse-vllm`, not `@llamaindex/liteparse`. Build with `tsconfig.build.json` so test files are not emitted into `dist`, and prune dev dependencies before producing a release-grade Linux x64 offline tgz. The npm package should include Node CLI/runtime dependencies and OCR adapter source/docs; do not put GLM model weights, Python GPU wheels, `.venv`, local benchmarks, or model caches into npm.
+
+CI must cover the custom branch as well as upstream mirror work. Keep `.github/workflows/ci.yml` aligned with the custom branch, and include source-level skill harness validation in CI. CI should not run `npm run sync:agent-skills`, because that writes user-level projections outside the repository; use source-only validation there.
+
 ## Common Tasks
 
 ### Adding a New Output Format
@@ -98,13 +129,14 @@ The processing pipeline is in `src/processing/`. Key files:
 4. Use the option in `src/core/parser.ts`
 
 ### Adding Advanced OCR Tooling
-GLM-OCR support is implemented as custom CLI/server tooling, not as a replacement for the baseline OCR contract.
+GLM-OCR and Codex support are implemented as custom CLI/server tooling, not as replacements for the baseline OCR contract.
 
 1. Keep `POST /ocr` compatible with `OCR_API_SPEC.md`: multipart `file`, optional `language`, and JSON `{ results: [{ text, bbox, confidence }] }`.
 2. Use `lit glmocr-ocr-server` or `lit glmocr-pipeline` for official GLM-OCR SDK layout bboxes. These boxes must come from PP-DocLayout/SDK output, not prompt-inferred whole-page LM Studio text.
 3. Keep `lit lmstudio-ocr`, `lit lmstudio-ocr-server`, and `lit lmstudio-ocr-pipeline` as direct LM Studio tooling for lightweight OCR/model smoke tests; mark fallback line boxes as degraded.
 4. If LM Studio runs locally and the model is installed but not loaded, the tooling may run `lms load <model> --identifier <model> -y`; keep `--no-auto-load` available for fail-fast operation.
-5. Treat model output as untrusted OCR evidence. Preserve raw responses and warnings in advanced artifacts instead of changing the LiteParse `/ocr` response shape.
+5. Keep `lit codex-ocr`, `lit codex-ocr-server`, and `lit codex-ocr-pipeline` as online/authenticated diagnostics. Use `$HOME/.codex-test` for live tests and make `/health` report whether auth/config are readable.
+6. Treat model output as untrusted OCR evidence. Preserve raw responses and warnings in advanced artifacts instead of changing the LiteParse `/ocr` response shape.
 
 ### Updating LiteParse Agent Skills
 The repo source authority for the custom `lit` CLI skills is `skills/liteparse-cli-tools-custom-collection`. Do not edit `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection` directly except through the sync script; that path is the validated installed runtime projection. Do not add repo-local `./.agents/skills` or `./.codex/skills` for this collection because those paths can auto-load runtime skills during development sessions.
@@ -117,12 +149,44 @@ When changing the skills, keep the CLI, docs, and OCR contract synchronized:
 4. Run `npm run sync:agent-skills:dry-run`.
 5. Run `npm run sync:agent-skills` after the dry-run is clean.
 
+### Updating the Skills Harness and Projections
+`skills/harness/liteparse-cli-skills.spec.json` is the maintained contract for the custom skills collection and its projections. When changing CLI commands, OCR docs, AGENTS.md, CI, or skill text, update this spec so `scripts/validate-liteparse-cli-skills.mjs` catches drift.
+
+Use this local sequence for source and projection maintenance:
+
+1. `npm run build`
+2. `npm run validate:agent-skills:source`
+3. `npm run sync:agent-skills:dry-run`
+4. `npm run sync:agent-skills`
+5. `npm run validate:agent-skills`
+
+In CI, use source-only validation and avoid projection writes:
+
+```bash
+npm run validate:agent-skills:source -- --skip-cli
+```
+
+Projection targets are expected to point at the installed runtime projection under `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`; keep `.codex`, `.codex-test`, `.claude`, Forge, and Gemini projections aligned through `scripts/sync-liteparse-cli-skills.mjs`, not manual edits.
+
 ## Testing Approach
 
-Currently tested via manual verification with sample documents. The project would benefit from:
-- Unit tests for processing utilities
-- Integration tests with known PDFs
-- Snapshot tests for output formats
+Use focused automated checks for changed surfaces:
+
+- `npm run build`
+- `npm test`
+- `npm run lint`
+- `npm run format:check`
+- `npm run validate:agent-skills:source`
+- `npm run sync:agent-skills:dry-run`
+- `npm run validate:agent-skills`
+- `python3 -m py_compile ocr/glmocr/server.py ocr/glmocr/test_server.py`
+- `uv run pytest test_server.py` from `ocr/glmocr/`
+- `bash -n docker/glmocr-offline/entrypoint.sh docker/glmocr-offline/offline-smoke.sh`
+- `docker buildx build --check -f Dockerfile.glmocr-offline .`
+
+For release-grade offline npm tgz validation, build inside Linux x64, prune dev dependencies, pack, then install the tgz in `node:24-trixie-slim --network=none` and run `lit --version`, `liteparse --version`, and a `lit parse <small.pdf> --no-ocr --format json` smoke.
+
+Full vLLM offline image validation requires a Linux x64 NVIDIA GPU host. Do not claim the Docker image tar is release-validated from macOS/OrbStack or another non-GPU environment.
 
 ## Key Dependencies
 
@@ -134,12 +198,18 @@ Currently tested via manual verification with sample documents. The project woul
 | `sharp` | Image processing |
 | `commander` | CLI framework |
 | `zod` | Schema validation |
+| `@openai/codex-sdk` | Codex OCR diagnostic backend |
 
 ## Entry Points
 
 - **CLI**: `src/index.ts` → `cli/parse.ts`
+- **Codex OCR CLI**: `cli/codex-ocr.ts`
 - **Library**: `src/lib.ts` exports `LiteParse` class and types
 - **Main Class**: `src/core/parser.ts` contains `LiteParse` orchestrator
+- **Codex OCR Core**: `src/engines/ocr/codex.ts`
+- **Codex OCR Server**: `src/engines/ocr/codex-server.ts`
+- **Skills Harness**: `skills/harness/liteparse-cli-skills.spec.json`
+- **Skills Validation/Sync**: `scripts/validate-liteparse-cli-skills.mjs`, `scripts/sync-liteparse-cli-skills.mjs`
 
 ## Related Documentation
 
@@ -157,3 +227,4 @@ If changes to the codebase are being made, please update the relevant documentat
 - [src/processing/README.md](src/processing/README.md) - Text extraction and spatial processing
 - [ocr/README.md](ocr/README.md) - OCR server implementations (EasyOCR, PaddleOCR)
 - [cli/README.md](cli/README.md) - CLI usage and options
+- [skills/harness/liteparse-cli-skills.spec.json](skills/harness/liteparse-cli-skills.spec.json) - Skills validation and projection contract

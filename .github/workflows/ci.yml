@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, custom/vllm-ocr-main]
   pull_request:
-    branches: [main]
+    branches: [main, custom/vllm-ocr-main]
 
 jobs:
   lint-and-build:
@@ -36,6 +36,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Validate custom skills source and harness docs
+        run: npm run validate:agent-skills:source -- --skip-cli
+
   test:
     runs-on: ubuntu-latest
 
@@ -65,7 +68,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build the base Docker image
         run: docker build .
       - name: Build the full Docker image
         run: docker build . -f full.Dockerfile
+      - name: Check custom offline GLM-OCR Dockerfile
+        run: docker buildx build --check -f Dockerfile.glmocr-offline .

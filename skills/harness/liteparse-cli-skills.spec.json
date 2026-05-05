@@ -84,13 +84,21 @@
       "ocr/README.md",
       "src/engines/ocr/README.md",
       "docs/src/content/docs/liteparse/cli-reference.md",
-      "docs/src/content/docs/liteparse/guides/ocr.md"
+      "docs/src/content/docs/liteparse/guides/ocr.md",
+      ".github/workflows/ci.yml"
     ],
     "required_terms": {
       "AGENTS.md": [
         "skills/liteparse-cli-tools-custom-collection",
+        "@arthur/liteparse-vllm",
+        "custom/vllm-ocr-main",
+        "src/engines/ocr/codex.ts",
+        "src/engines/ocr/codex-server.ts",
+        "skills/harness/liteparse-cli-skills.spec.json",
+        "npm run validate:agent-skills:source",
         "npm run validate:agent-skills",
-        "npm run sync:agent-skills:dry-run"
+        "npm run sync:agent-skills:dry-run",
+        "Dockerfile.glmocr-offline"
       ],
       "OCR_API_SPEC.md": [
         "POST /ocr",
@@ -134,6 +142,11 @@
         "final/document.md",
         "final/document.json",
         "codex_bboxes_are_model_inferred"
+      ],
+      ".github/workflows/ci.yml": [
+        "custom/vllm-ocr-main",
+        "validate:agent-skills:source",
+        "Dockerfile.glmocr-offline"
       ]
     }
   },
