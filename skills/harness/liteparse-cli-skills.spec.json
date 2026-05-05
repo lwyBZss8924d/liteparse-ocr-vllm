@@ -93,7 +93,8 @@
       "docker/glmocr-offline/entrypoint.sh",
       "docker/codex-ocr-server/README.md",
       "docker/codex-ocr-server/config.local-open-responses.example.toml",
-      "scripts/smoke-offline-npm-tgz.mjs"
+      "scripts/smoke-offline-npm-tgz.mjs",
+      "scripts/validate-glmocr-offline-gpu.sh"
     ],
     "required_terms": {
       "AGENTS.md": [
@@ -130,6 +131,8 @@
         "default Docker profile is `codex`",
         "wire_api = \"responses\"",
         "smoke:offline-npm-tgz",
+        "scripts/validate-glmocr-offline-gpu.sh",
+        "explicit unverified gate",
         "GLM-OCR model",
         "MIT licensed",
         "PP-DocLayoutV3",
@@ -204,6 +207,15 @@
         "node:24-trixie-slim",
         "LITEPARSE_OFFLINE_TGZ_CONTAINER_PACK",
         "Hello LiteParse"
+      ],
+      "scripts/validate-glmocr-offline-gpu.sh": [
+        "--gpus all",
+        "--network=none",
+        "docker load",
+        "POST /ocr",
+        "lit parse",
+        "HF_HUB_OFFLINE=1",
+        "TRANSFORMERS_OFFLINE=1"
       ]
     }
   },

@@ -469,6 +469,15 @@ docker run --rm --gpus all --ipc=host -p 8831:8831 \
 
 The `codex` profile starts `lit codex-ocr-server` on port `8833`. The `glmocr-vllm` profile starts `vllm serve /opt/models/glm-ocr` on port `8000`, waits for `/v1/models`, then starts `lit glmocr-ocr-server` on port `8831` with `--layout-model-dir /opt/models/pp-doclayout`. The image sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` at runtime; build the image online once, then distribute the saved tar.
 
+On a Linux x64 NVIDIA GPU host, run the release gate script after copying the tar:
+
+```bash
+scripts/validate-glmocr-offline-gpu.sh \
+  liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+```
+
+This script loads the tar, checks image metadata, verifies Docker GPU runtime availability, runs the in-image offline smoke under `--network=none`, then validates container-internal `/health`, `POST /ocr`, and `lit parse --ocr-server-url http://127.0.0.1:8831/ocr`. On local hosts without NVIDIA GPU support, keep this as an explicit unverified gate and rerun it on the GPU deployment host.
+
 Codex OCR deployment options:
 
 - Mount a trusted Codex home: `-v "$HOME/.codex-test:/codex-home" -e LITEPARSE_CODEX_HOME=/codex-home`. This may include `auth.json` from `codex login` and `config.toml`; treat `auth.json` as a secret.
