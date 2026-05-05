@@ -1,4 +1,19 @@
-# @llamaindex/liteparse
+# @arthur/liteparse-vllm
+
+## 1.5.3-custom.0
+
+### Custom Fork Changes
+
+- Forked upstream `run-llama/liteparse` into the independent custom OCR package `@arthur/liteparse-vllm`, based on upstream `v1.5.3`.
+- Added custom OCR server and pipeline tooling for GLM-OCR SDK, LM Studio diagnostics, and Codex OCR diagnostics while preserving the baseline LiteParse `POST /ocr` multipart contract.
+- Added `src/engines/ocr/codex.ts` and `src/engines/ocr/codex-server.ts` for LiteParse-compatible `codex-ocr-server` plus the richer `POST /ocr/analyze` artifact path.
+- Added offline packaging docs and CI coverage for the custom branch, including Linux x64 offline npm tgz smoke validation in `node:24-trixie-slim --network=none`.
+- Set the offline Docker image default OCR profile to `codex-ocr-server` on port `8833`, with the GLM-OCR vLLM GPU profile kept as an explicit `glmocr-vllm` deployment mode.
+- Documented Docker Codex OCR deployment requirements: mount `LITEPARSE_CODEX_HOME` with Codex auth/config, or provide a Codex `model_provider` config for a local/proxy Responses-compatible provider.
+- Clarified that the GLM-OCR SDK/`uv run server.py` development path is not GPU-only; GPU applies to the optional vLLM image/model-serving path.
+- Synchronized the repo-versioned LiteParse skills source and harness projection contract so the installed runtime skills document the custom OCR, Docker, CI, and provider boundaries.
+
+# Upstream @llamaindex/liteparse History
 
 ## 1.5.3
 
