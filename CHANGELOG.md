@@ -1,5 +1,11 @@
 # @llamaindex/liteparse
 
+## 1.5.3
+
+### Patch Changes
+
+- [#151](https://github.com/run-llama/liteparse/pull/151) [`e3d04b4`](https://github.com/run-llama/liteparse/commit/e3d04b44a922834a6be58def3373005fd3e669e0) Thanks [@logan-markewich](https://github.com/logan-markewich)! - Browser support guide
+
 ## 1.5.2
 
 ### Patch Changes
