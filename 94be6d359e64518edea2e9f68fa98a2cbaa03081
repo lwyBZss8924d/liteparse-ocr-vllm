@@ -1,0 +1,1 @@
+PoUW: Switched LiteParse Codex OCR defaults to HOME/.codex, removed codex-test source references, synced installed LiteParse CLI skills, and verified build/test/skill/default-home probes.
