@@ -59,7 +59,7 @@ Node server exposed by the LiteParse CLI and backed by OpenAI Codex multimodal p
 - Implements `POST /ocr` exactly as required by `OCR_API_SPEC.md`
 - Exposes `POST /ocr/analyze` for the full advanced artifact: Markdown, page metadata, layout regions, segmented assets, annotations, conversion results, model metadata, and provenance
 - Uses `@openai/codex-sdk` by default and supports an experimental `codex app-server` backend with `--backend app-server`
-- Live development/test runs should pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME=$HOME/.codex-test`
+- Live development/test runs should set `HOME` to a temporary directory containing `$HOME/.codex/auth.json` and omit `--codex-home` so default `$HOME/.codex` behavior is exercised
 - Docker defaults to the `codex` OCR profile: mount `LITEPARSE_CODEX_HOME` with `auth.json`/`config.toml`, or provide a Codex `model_provider` config for a local/proxy Responses-compatible endpoint
 - Bounding boxes are model-inferred and reported with warnings; use `--strict-bbox` to drop regions without usable boxes
 
@@ -84,7 +84,7 @@ lit glmocr-ocr-server
 # OR start Docker's default Codex OCR server profile
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
-  -v "$HOME/.codex-test:/codex-home" \
+  -v "$HOME/.codex:/codex-home" \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0
 
 # OR start the optional offline vLLM GLM-OCR image after docker load on a GPU serving host
@@ -96,7 +96,7 @@ docker run --rm --gpus all --ipc=host -p 8831:8831 \
 lit lmstudio-ocr-server
 
 # OR start the Codex OCR server
-lit codex-ocr-server --codex-home "$HOME/.codex-test"
+lit codex-ocr-server
 ```
 
 Then use with LiteParse:

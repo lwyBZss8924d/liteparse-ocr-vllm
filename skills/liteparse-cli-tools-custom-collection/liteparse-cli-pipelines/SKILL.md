@@ -171,11 +171,16 @@ The direct server follows `OCR_API_SPEC.md`: multipart `file`, optional `languag
 Use this when the user wants Codex multimodal OCR behind the normal LiteParse Custom HTTP OCR server contract.
 
 ```bash
+ODQA_CODEX_TEST_HOME="$(mktemp -d)"
+mkdir -p "$ODQA_CODEX_TEST_HOME/.codex"
+cp "$HOME/.codex/auth.json" "$ODQA_CODEX_TEST_HOME/.codex/auth.json"
+cp "$HOME/.codex/config.toml" "$ODQA_CODEX_TEST_HOME/.codex/config.toml" 2>/dev/null || true
+HOME="$ODQA_CODEX_TEST_HOME" \
 lit codex-ocr-server \
   --port 8833 \
-  --codex-home "$HOME/.codex-test" \
   --model gpt-5.5 \
   --reasoning-effort medium
+HOME="$ODQA_CODEX_TEST_HOME" \
 liteparse parse document.pdf \
   --ocr-server-url http://127.0.0.1:8833/ocr \
   --format json \
@@ -193,7 +198,7 @@ curl -sS -X POST http://127.0.0.1:8833/ocr/analyze \
 | jq '.markdown, .page_metadata, .layout_regions, .assets, .warnings'
 ```
 
-The default backend is `@openai/codex-sdk`. Use `--backend app-server` only when explicitly testing the experimental `codex app-server` JSON-RPC wrapper. Use `--codex-home "$HOME/.codex-test"` or `LITEPARSE_CODEX_HOME=$HOME/.codex-test` for live development/evals so normal Codex state remains separate.
+The default backend is `@openai/codex-sdk`. Use `--backend app-server` only when explicitly testing the experimental `codex app-server` JSON-RPC wrapper. For live development/evals, set `HOME` to a temporary directory containing `.codex/auth.json` and optional `.codex/config.toml`, then omit `--codex-home` so the default `$HOME/.codex/auth.json` path is exercised. Use `--codex-home`, `LITEPARSE_CODEX_HOME`, or `CODEX_HOME` only when explicitly testing override behavior.
 
 For Docker or headless runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.
 
@@ -203,7 +208,6 @@ Use a direct image/crop OCR call when you need a Codex page artifact without sta
 
 ```bash
 lit codex-ocr page.png \
-  --codex-home "$HOME/.codex-test" \
   --model gpt-5.5 \
   --reasoning-effort medium \
   --json \
@@ -216,7 +220,6 @@ Use the pipeline command for documents, directories, or image sets:
 lit codex-ocr-pipeline \
   --path document.pdf \
   --output /tmp/liteparse-codex-ocr \
-  --codex-home "$HOME/.codex-test" \
   --reasoning-effort high \
   --target-pages "1-3" \
   --json
@@ -234,7 +237,6 @@ Use this pattern when validating whether a Codex OCR pipeline candidate can clea
 lit codex-ocr-pipeline \
   --path input.pdf \
   --output tmp/codex-ocr-eval/candidate/codex-ocr-pipeline \
-  --codex-home "$HOME/.codex-test" \
   --reasoning-effort high \
   --target-pages "1-10" \
   --json
@@ -339,7 +341,7 @@ rm -f "$tmp_pdf"
 - Keep generated screenshots, parsed JSON, and debug output under `/tmp` or a user-requested scratch path unless the user asks for repo artifacts.
 - Use `--target-pages` for large PDFs before running OCR.
 - Use `--no-auto-load` for LM Studio GLM-OCR commands when the agent should not trigger `lms load`.
-- Use `--codex-home "$HOME/.codex-test"` for Codex OCR development and evals unless the user explicitly wants the normal Codex state directory.
+- Use a temporary `HOME` with default `$HOME/.codex/auth.json` for Codex OCR development and evals unless the user explicitly wants to test an override path.
 - Do not treat Codex `/ocr/analyze` as a replacement for the baseline LiteParse `/ocr` response shape; it is the richer agent artifact endpoint.
 - Do not pass document passwords through persistent scripts or manifests.
 - Treat Office conversion as degraded if `libreoffice` or `soffice` is missing.

@@ -126,7 +126,7 @@ Codex bboxes are model-inferred visual localization evidence, not official layou
 For live development and tests, use a separate Codex state directory:
 
 ```bash
-lit codex-ocr page.png --codex-home "$HOME/.codex-test" --model gpt-5.4-mini --json
+lit codex-ocr page.png --model gpt-5.4-mini --json
 ```
 
 For Docker or headless `codex-ocr-server` runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.

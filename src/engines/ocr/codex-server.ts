@@ -6,6 +6,7 @@ import {
   CodexOcrBackend,
   CodexOcrOptions,
   convertCodexArtifactToOcrResults,
+  resolveCodexHome,
   runCodexOcr,
 } from "./codex.js";
 import pkg from "../../../package.json" with { type: "json" };
@@ -105,9 +106,9 @@ async function handleHealth(
   response: http.ServerResponse,
   options: Required<CodexOcrServerOptions>
 ): Promise<void> {
-  const codexHome = options.codexHome || process.env.LITEPARSE_CODEX_HOME || process.env.CODEX_HOME;
-  const authPath = codexHome ? `${codexHome}/auth.json` : undefined;
-  const configPath = codexHome ? `${codexHome}/config.toml` : undefined;
+  const codexHome = resolveCodexHome(options.codexHome);
+  const authPath = `${codexHome}/auth.json`;
+  const configPath = `${codexHome}/config.toml`;
   const [authReadable, configReadable] = await Promise.all([
     authPath ? canAccess(authPath) : Promise.resolve(false),
     configPath ? canAccess(configPath) : Promise.resolve(false),
@@ -179,7 +180,7 @@ function resolveServerOptions(options: CodexOcrServerOptions): Required<CodexOcr
   return {
     backend: options.backend ?? "sdk",
     codexConfig: options.codexConfig ?? {},
-    codexHome: options.codexHome ?? "",
+    codexHome: resolveCodexHome(options.codexHome),
     codexPath: options.codexPath ?? "",
     concurrency: options.concurrency ?? 1,
     host: options.host ?? "127.0.0.1",

@@ -123,7 +123,7 @@ lit glmocr-ocr-server
 lit parse document.pdf --ocr-server-url http://127.0.0.1:8831/ocr --format json
 
 # Parse with Codex OCR server for multimodal page understanding
-lit codex-ocr-server --codex-home "$HOME/.codex-test"
+lit codex-ocr-server
 lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
 ```
 
@@ -455,7 +455,7 @@ docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
 # Default profile: codex-ocr-server on :8833.
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
-  -v "$HOME/.codex-test:/codex-home" \
+  -v "$HOME/.codex:/codex-home" \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0
 
 # Optional vLLM GLM-OCR profile.
@@ -480,7 +480,7 @@ This script loads the tar, checks image metadata, verifies Docker GPU runtime av
 
 Codex OCR deployment options:
 
-- Mount a trusted Codex home: `-v "$HOME/.codex-test:/codex-home" -e LITEPARSE_CODEX_HOME=/codex-home`. This may include `auth.json` from `codex login` and `config.toml`; treat `auth.json` as a secret.
+- Mount a trusted Codex home: `-v "$HOME/.codex:/codex-home" -e LITEPARSE_CODEX_HOME=/codex-home`. This may include `auth.json` from `codex login` and `config.toml`; treat `auth.json` as a secret.
 - Use a custom Codex model provider in `/codex-home/config.toml`, then set `model_provider` to that provider id. Codex custom providers define `base_url`, `wire_api`, auth, and optional headers under `[model_providers.<id>]`.
 - Current official Codex config schema documents `wire_api = "responses"` for custom providers. For an OpenAI Chat Completions-compatible local endpoint, put an adapter/proxy in front of it that exposes a Responses/Open Responses-compatible API before using it as the Codex provider, unless your pinned Codex version documents another supported `wire_api`.
 
@@ -520,8 +520,8 @@ For agentic multimodal OCR, LiteParse can expose OpenAI Codex as a Custom HTTP O
 
 ```bash
 # Uses @openai/codex-sdk by default.
-# Live development/test state should use $HOME/.codex-test.
-lit codex-ocr-server --codex-home "$HOME/.codex-test"
+# Live tests should set HOME to a temp dir containing .codex/auth.json.
+lit codex-ocr-server
 
 lit parse document.pdf \
   --ocr-server-url http://127.0.0.1:8833/ocr \
@@ -537,7 +537,7 @@ lit codex-ocr-pipeline \
   --path document.pdf \
   --output ./codex-ocr-output \
   --target-pages "1-3" \
-  --codex-home "$HOME/.codex-test"
+  --json
 ```
 
 The artifact tree includes `pages/`, `codex/`, `liteparse/`, `assets/<type>/`, `annotations/`, `final/document.md`, `final/document.json`, and `manifest.json`. Final Markdown includes a LiteParse structured OCR context section that promotes page metadata, selected layout regions, and segmented asset details for downstream QA. Codex bounding boxes are model-inferred visual localization evidence and include `codex_bboxes_are_model_inferred` warnings; use `--strict-bbox` to drop regions without usable boxes.
@@ -597,7 +597,7 @@ choco install imagemagick.app # might require admin permissions
 | `LITEPARSE_GLMOCR_ROOT` | GLM-OCR SDK root used by `lit glmocr-ocr-server`. Docker defaults to `/opt/glm-ocr-sdk`; local installs may omit it when `glmocr` is importable. |
 | `LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR` | PP-DocLayout model directory or Hub identifier. Docker defaults to `/opt/models/pp-doclayout`. |
 | `HF_HUB_OFFLINE` / `TRANSFORMERS_OFFLINE` | Set to `1` in the offline Docker image so Hugging Face and Transformers use only bundled model artifacts. |
-| `LITEPARSE_CODEX_HOME` | Codex state directory for Codex OCR. Use `$HOME/.codex-test` for live development/testing so OAuth tokens and config remain separate from normal Codex state. |
+| `LITEPARSE_CODEX_HOME` | Codex state directory for Codex OCR. Use `$HOME/.codex` for live development/testing so OAuth tokens and config remain separate from normal Codex state. |
 | `LITEPARSE_CODEX_OCR_MODEL` | Default Codex OCR model. Defaults to `gpt-5.5`; use `gpt-5.4-mini` for cheaper smoke tests. |
 | `LITEPARSE_CODEX_OCR_REASONING` | Default Codex OCR reasoning effort. Defaults to `medium`; the pipeline command defaults to `high`. |
 

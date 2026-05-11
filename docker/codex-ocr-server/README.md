@@ -18,7 +18,7 @@ This server implements the LiteParse `POST /ocr` multipart contract and exposes 
 ```bash
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
-  -v "$HOME/.codex-test:/codex-home" \
+  -v "$HOME/.codex:/codex-home" \
   liteparse-glmocr-vllm-offline:1.5.3-custom.0
 ```
 

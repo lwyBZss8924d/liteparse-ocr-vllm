@@ -97,7 +97,9 @@ Codex OCR is implemented in `src/engines/ocr/codex.ts` and `src/engines/ocr/code
 - `POST /ocr` must keep the LiteParse OCR contract: multipart `file`, optional `language`, and JSON `results[].text`, `results[].bbox`, `results[].confidence`.
 - `POST /ocr/analyze` may return the richer Codex artifact: Markdown, page metadata, layout regions, assets, annotations, conversion metadata, model provenance, and warnings.
 - Codex bounding boxes are model-inferred visual localization evidence, not official layout-detector boxes. Preserve `codex_bboxes_are_model_inferred` warnings and keep `--strict-bbox` behavior available.
-- Live development and tests should use `--codex-home "$HOME/.codex-test"` or `LITEPARSE_CODEX_HOME=$HOME/.codex-test` so auth/config are separated from normal Codex state.
+- Live development and tests should prefer a temporary `HOME` that contains
+  `$HOME/.codex/auth.json` and optional `$HOME/.codex/config.toml`; omit
+  `--codex-home` unless the test is explicitly validating override behavior.
 
 ### 7. Custom Packaging and CI
 The custom npm package is `@zzwz/liteparse-vllm`, not `@llamaindex/liteparse`. Build with `tsconfig.build.json` so test files are not emitted into `dist`, and prune dev dependencies before producing a release-grade Linux x64 offline tgz. The npm package should include Node CLI/runtime dependencies and OCR adapter source/docs; do not put GLM model weights, Python GPU wheels, `.venv`, local benchmarks, or model caches into npm.
@@ -137,7 +139,7 @@ GLM-OCR and Codex support are implemented as custom CLI/server tooling, not as r
 2. Use `lit glmocr-ocr-server` or `lit glmocr-pipeline` for official GLM-OCR SDK layout bboxes. These boxes must come from PP-DocLayout/SDK output, not prompt-inferred whole-page LM Studio text.
 3. Keep `lit lmstudio-ocr`, `lit lmstudio-ocr-server`, and `lit lmstudio-ocr-pipeline` as direct LM Studio tooling for lightweight OCR/model smoke tests; mark fallback line boxes as degraded.
 4. If LM Studio runs locally and the model is installed but not loaded, the tooling may run `lms load <model> --identifier <model> -y`; keep `--no-auto-load` available for fail-fast operation.
-5. Keep `lit codex-ocr`, `lit codex-ocr-server`, and `lit codex-ocr-pipeline` as online/authenticated diagnostics. Use `$HOME/.codex-test` for live tests and make `/health` report whether auth/config are readable.
+5. Keep `lit codex-ocr`, `lit codex-ocr-server`, and `lit codex-ocr-pipeline` as online/authenticated diagnostics. Use a temporary `HOME` with default `$HOME/.codex/auth.json` for live tests and make `/health` report whether auth/config are readable.
 6. Treat model output as untrusted OCR evidence. Preserve raw responses and warnings in advanced artifacts instead of changing the LiteParse `/ocr` response shape.
 
 ### Updating LiteParse Agent Skills
@@ -168,7 +170,7 @@ In CI, use source-only validation and avoid projection writes:
 npm run validate:agent-skills:source -- --skip-cli
 ```
 
-Projection targets are expected to point at the installed runtime projection under `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`; keep `.codex`, `.codex-test`, `.claude`, Forge, and Gemini projections aligned through `scripts/sync-liteparse-cli-skills.mjs`, not manual edits.
+Projection targets are expected to point at the installed runtime projection under `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`; keep `.codex`, `.codex`, `.claude`, Forge, and Gemini projections aligned through `scripts/sync-liteparse-cli-skills.mjs`, not manual edits.
 
 ## Testing Approach
 

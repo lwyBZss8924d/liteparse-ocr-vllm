@@ -71,7 +71,7 @@
     "LITEPARSE_CODEX_OCR_MODEL",
     "LITEPARSE_CODEX_OCR_REASONING",
     "codex_bboxes_are_model_inferred",
-    "$HOME/.codex-test",
+    "$HOME/.codex/auth.json",
     "final/document.md",
     "final/document.json",
     "model_provider",
@@ -151,7 +151,7 @@
         "LITEPARSE_CODEX_HOME",
         "SDK/`uv run server.py` path is not GPU-only",
         "Docker defaults to the `codex` OCR profile",
-        "$HOME/.codex-test"
+        "$HOME/.codex/auth.json"
       ],
       "ocr/glmocr/README.md": [
         "Optional vLLM offline Docker runtime",
@@ -222,7 +222,6 @@
   "projection_targets": [
     "$HOME/.agents/skills/liteparse-cli-tools-custom-collection",
     "$HOME/.codex/skills/liteparse-cli-tools-custom-collection",
-    "$HOME/.codex-test/skills/liteparse-cli-tools-custom-collection",
     "$HOME/.claude/skills/liteparse-cli-tools-custom-collection",
     "$HOME/forge/skills/liteparse-cli-tools-custom-collection",
     "$HOME/.gemini/skills/liteparse-cli-tools-custom-collection"
