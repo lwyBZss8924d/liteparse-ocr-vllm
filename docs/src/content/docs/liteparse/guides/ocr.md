@@ -96,17 +96,17 @@ For air-gapped GPU delivery, build the vLLM-only image online once and transfer 
 
 ```bash
 docker build -f Dockerfile.glmocr-offline \
-  -t liteparse-glmocr-vllm-offline:1.5.3-custom.0 .
-docker save -o liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  -t liteparse-glmocr-vllm-offline:1.5.3-custom.1 .
+docker save -o liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 On the offline host, validate the bundled model artifacts and local loopback path:
 
 ```bash
-docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar
 docker run --rm --gpus all --ipc=host --network=none \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1 smoke
 ```
 
 ### LM Studio GLM-OCR Direct Wrapper
@@ -144,7 +144,7 @@ LiteParse can expose OpenAI Codex multimodal page understanding as a Custom HTTP
 ```bash
 # Starts http://127.0.0.1:8833/ocr
 # Use the separate test Codex state requested for live development.
-lit codex-ocr-server --codex-home "$HOME/.codex-test"
+lit codex-ocr-server
 
 # Parse through the standard LiteParse HTTP OCR contract
 lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
@@ -157,13 +157,12 @@ For Docker or headless runs, set `LITEPARSE_CODEX_HOME` to a mounted Codex home 
 Advanced Codex artifacts can be generated without `lit parse`:
 
 ```bash
-lit codex-ocr page.png --codex-home "$HOME/.codex-test" --model gpt-5.4-mini --json
+lit codex-ocr page.png --model gpt-5.4-mini --json
 
 lit codex-ocr-pipeline \
   --path document.pdf \
   --output ./codex-ocr-output \
-  --target-pages "1-3" \
-  --codex-home "$HOME/.codex-test"
+  --target-pages "1-3"
 ```
 
 The pipeline writes `pages/`, `codex/`, `liteparse/`, `assets/<type>/`, `annotations/`, `final/document.md`, `final/document.json`, and `manifest.json`. Codex bounding boxes are model-inferred and include `codex_bboxes_are_model_inferred` warnings; use `--strict-bbox` to drop regions without usable boxes.

@@ -1019,9 +1019,17 @@ function buildCodexEnv(codexHome?: string): Record<string, string> {
   for (const [key, value] of Object.entries(process.env)) {
     if (typeof value === "string") env[key] = value;
   }
-  const resolvedCodexHome = codexHome ?? process.env.LITEPARSE_CODEX_HOME ?? process.env.CODEX_HOME;
-  if (resolvedCodexHome) env.CODEX_HOME = resolvedCodexHome;
+  env.CODEX_HOME = resolveCodexHome(codexHome);
   return env;
+}
+
+export function resolveCodexHome(codexHome?: string): string {
+  return path.resolve(
+    codexHome ||
+      process.env.LITEPARSE_CODEX_HOME ||
+      process.env.CODEX_HOME ||
+      path.join(process.env.HOME || "~", ".codex")
+  );
 }
 
 function normalizeRegionType(value: unknown): CodexOcrRegionType {

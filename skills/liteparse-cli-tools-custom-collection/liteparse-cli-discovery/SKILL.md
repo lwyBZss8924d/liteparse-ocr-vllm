@@ -21,9 +21,9 @@ Use this skill to decide which LiteParse command and output mode matches the tas
 - Run one GLM-OCR image/crop: `lit lmstudio-ocr image.png --mode layout --json`
 - Run official GLM-OCR SDK artifacts for a document: `lit glmocr-pipeline -p document.pdf -o ./glmocr-output`
 - Run direct LM Studio GLM-OCR artifacts for a document: `lit lmstudio-ocr-pipeline -p document.pdf -o ./glm-ocr-output --mode auto`
-- Use Codex OCR as a LiteParse OCR server: `lit codex-ocr-server --codex-home "$HOME/.codex-test"`, then `liteparse parse <file> --ocr-server-url http://127.0.0.1:8833/ocr --format json`
-- Run one Codex OCR image/crop: `lit codex-ocr image.png --codex-home "$HOME/.codex-test" --json`
-- Run Codex OCR page-understanding artifacts for a document: `lit codex-ocr-pipeline -p document.pdf -o ./codex-ocr-output --codex-home "$HOME/.codex-test" --json`
+- Use Codex OCR as a LiteParse OCR server: `HOME="$ODQA_CODEX_TEST_HOME" lit codex-ocr-server`, then `HOME="$ODQA_CODEX_TEST_HOME" liteparse parse <file> --ocr-server-url http://127.0.0.1:8833/ocr --format json`
+- Run one Codex OCR image/crop: `HOME="$ODQA_CODEX_TEST_HOME" lit codex-ocr image.png --json`
+- Run Codex OCR page-understanding artifacts for a document: `HOME="$ODQA_CODEX_TEST_HOME" lit codex-ocr-pipeline -p document.pdf -o ./codex-ocr-output --json`
 - Use the TypeScript library when the CLI cannot express a fork-only option or in-memory buffer workflow.
 
 `liteparse` and `lit` are aliases for the same CLI on this workstation. Prefer `liteparse` in documentation and `lit` for shorter interactive commands.
@@ -119,7 +119,7 @@ Current workstation expectation:
 - `LITEPARSE_LMSTUDIO_AUTO_LOAD=0` disables automatic `lms load`.
 - `LITEPARSE_GLMOCR_OCR_API_URL` sets the model endpoint used by `ocr/glmocr/server.py`, usually LM Studio OpenAI-compatible `/v1/chat/completions` or the LiteParse `lmstudio-openai-adapter`.
 - `LITEPARSE_GLMOCR_LAYOUT_DEVICE=cpu` forces PP-DocLayout to run on CPU, useful on Apple Silicon.
-- `LITEPARSE_CODEX_HOME` sets the Codex state directory used by Codex OCR commands. Use `$HOME/.codex-test` for live development and evals so normal Codex state remains separate.
+- `LITEPARSE_CODEX_HOME` overrides the Codex state directory used by Codex OCR commands. For live development and evals, prefer a temporary `HOME` with default `$HOME/.codex/auth.json` and omit the override unless the override path is what you are testing.
 - Docker Codex OCR runs must mount `LITEPARSE_CODEX_HOME` with auth/config, or provide a Codex `model_provider` config. Current official Codex config documents custom providers with `wire_api = "responses"`; wrap Chat Completions-only endpoints with a Responses/Open Responses adapter before selecting them as the Codex provider.
 - `LITEPARSE_CODEX_OCR_MODEL` sets the default Codex OCR model. Defaults to `gpt-5.5`; use a smaller model only for cheaper smoke tests.
 - `LITEPARSE_CODEX_OCR_REASONING` sets the default Codex OCR reasoning effort. Single-image/server commands default to `medium`; `codex-ocr-pipeline` defaults to `high`.

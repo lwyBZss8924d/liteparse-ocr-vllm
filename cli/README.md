@@ -66,7 +66,7 @@ Offline vLLM image entrypoint:
 
 ```bash
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 ---
@@ -95,7 +95,7 @@ Start a LiteParse-compatible Custom HTTP OCR server at `http://127.0.0.1:8833/oc
 
 This server follows `OCR_API_SPEC.md`: multipart `file`, optional `language`, and JSON `{ results: [{ text, bbox, confidence }] }`. It also exposes `POST /ocr/analyze` for the full Codex artifact with Markdown, page metadata, layout regions, segmented assets, annotations, and provenance.
 
-The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper. For live development and tests, pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME`.
+The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper. For live development and tests, set `HOME` to a temporary directory that contains `.codex/auth.json` and omit `--codex-home` so the default `$HOME/.codex` path is exercised. Use `--codex-home` or `LITEPARSE_CODEX_HOME` only when validating override behavior.
 
 For Docker or headless runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Official Codex config currently documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.
 
@@ -143,15 +143,14 @@ LM Studio commands also accept JSON config files and `--set key=value` overrides
 Examples:
 
 ```bash
-lit codex-ocr page.png --codex-home "$HOME/.codex-test" --model gpt-5.4-mini --json
+lit codex-ocr page.png --model gpt-5.4-mini --json
 
-lit codex-ocr-server --port 8833 --codex-home "$HOME/.codex-test"
+lit codex-ocr-server --port 8833
 
 lit codex-ocr-pipeline \
   --path document.pdf \
   --output ./codex-ocr-output \
-  --target-pages "1-3" \
-  --codex-home "$HOME/.codex-test"
+  --target-pages "1-3"
 
 lit glmocr-ocr-server --port 8831
 

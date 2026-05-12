@@ -1,11 +1,11 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.3/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "run-llama/liteparse" }],
+  "changelog": ["@changesets/changelog-github", { "repo": "lwyBZss8924d/liteparse-ocr-vllm" }],
   "commit": false,
   "fixed": [],
   "linked": [],
   "access": "public",
-  "baseBranch": "main",
+  "baseBranch": "custom/vllm-ocr-main",
   "updateInternalDependencies": "patch",
   "ignore": []
 }

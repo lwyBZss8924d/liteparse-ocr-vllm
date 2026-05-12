@@ -1,6 +1,6 @@
 {
   "name": "@zzwz/liteparse-vllm",
-  "version": "1.5.3-custom.0",
+  "version": "1.5.3-custom.1",
   "description": "Open-source PDF parsing with spatial text extraction and OCR processing with Custom Codex-OCR and GML-OCR Servers",
   "type": "module",
   "main": "./dist/src/lib.js",

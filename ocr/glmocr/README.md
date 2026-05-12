@@ -114,7 +114,7 @@ Optional vLLM offline Docker runtime:
 
 ```bash
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 The GLM-OCR SDK service can run through `uv run server.py` without this Docker image. The offline image packages vLLM model serving for air-gapped deployment; a GPU host is expected for practical vLLM inference. It starts `vllm serve /opt/models/glm-ocr` and points the GLM-OCR SDK at `/opt/models/pp-doclayout` through `LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR`.

@@ -212,7 +212,7 @@ lit codex-ocr [options] <image>
 | `-o, --output <file>` | Write normalized Codex OCR artifact JSON to a file | — |
 | `--raw-output <file>` | Write the raw Codex SDK/app-server response JSON | — |
 | `--backend <backend>` | `sdk` or `app-server` | `sdk` |
-| `--codex-home <dir>` | Codex state directory; live dev tests use `$HOME/.codex-test` | — |
+| `--codex-home <dir>` | Codex state directory override; default is `$HOME/.codex` | — |
 | `--codex-path <path>` | Path to the `codex` CLI binary | — |
 | `--model <model>` | Codex model | `gpt-5.5` |
 | `--reasoning-effort <effort>` | `minimal`, `low`, `medium`, `high`, or `xhigh` | `medium` |
@@ -261,7 +261,6 @@ lit codex-ocr-pipeline \
   --path document.pdf \
   --output ./codex-ocr-output \
   --target-pages "1-3" \
-  --codex-home "$HOME/.codex-test" \
   --json
 ```
 

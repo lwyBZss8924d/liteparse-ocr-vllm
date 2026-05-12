@@ -67,15 +67,20 @@ The LM Studio direct wrapper auto-runs `lms load <model> --identifier <model> -y
 Codex OCR server:
 
 ```bash
+ODQA_CODEX_TEST_HOME="$(mktemp -d)"
+mkdir -p "$ODQA_CODEX_TEST_HOME/.codex"
+cp "$HOME/.codex/auth.json" "$ODQA_CODEX_TEST_HOME/.codex/auth.json"
+cp "$HOME/.codex/config.toml" "$ODQA_CODEX_TEST_HOME/.codex/config.toml" 2>/dev/null || true
+HOME="$ODQA_CODEX_TEST_HOME" \
 lit codex-ocr-server \
   --port 8833 \
-  --codex-home "$HOME/.codex-test" \
   --model gpt-5.5 \
   --reasoning-effort medium
+HOME="$ODQA_CODEX_TEST_HOME" \
 liteparse parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
 ```
 
-The Codex server follows the same LiteParse `/ocr` contract as the other HTTP OCR servers. It also exposes `POST /ocr/analyze` for the full advanced artifact with page Markdown, `page_metadata`, `layout_regions`, segmented `assets`, `annotations`, conversion results, model metadata, and provenance. The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper. Live development and tests should pass `--codex-home "$HOME/.codex-test"` or set `LITEPARSE_CODEX_HOME=$HOME/.codex-test` so OAuth tokens and config stay separate from normal Codex state.
+The Codex server follows the same LiteParse `/ocr` contract as the other HTTP OCR servers. It also exposes `POST /ocr/analyze` for the full advanced artifact with page Markdown, `page_metadata`, `layout_regions`, segmented `assets`, `annotations`, conversion results, model metadata, and provenance. The default backend is `@openai/codex-sdk`; `--backend app-server` enables the experimental `codex app-server` JSON-RPC wrapper. Live development and tests should set `HOME` to a temporary directory that contains `.codex/auth.json`, then omit `--codex-home` so the default `$HOME/.codex/auth.json` path is exercised. Use `--codex-home`, `LITEPARSE_CODEX_HOME`, or `CODEX_HOME` only when explicitly testing override behavior.
 
 For Docker or headless runs, `LITEPARSE_CODEX_HOME` must point at a Codex home containing usable auth/config, or a `config.toml` with a custom Codex `model_provider`. Current official Codex config documents custom providers with `wire_api = "responses"`; expose local OpenAI Chat Completions-compatible endpoints through a Responses/Open Responses adapter before selecting them as the Codex provider.
 
@@ -83,7 +88,6 @@ Run one image through Codex without starting the server:
 
 ```bash
 lit codex-ocr page.png \
-  --codex-home "$HOME/.codex-test" \
   --model gpt-5.5 \
   --reasoning-effort medium \
   --json
@@ -160,7 +164,7 @@ Release/readiness stance:
 - It is suitable for table and formula-heavy local OCR workflows.
 - `codex-ocr-server` is a formal optional advanced agentic OCR backend for page-understanding artifacts and LiteParse-compatible `/ocr` JSON.
 - It is heavier and slower than local OCR engines because each page/image is a Codex multimodal request.
-- It requires working Codex auth/config. Use `$HOME/.codex-test` for live development and evals.
+- It requires working Codex auth/config. Use a temporary `HOME` with default `$HOME/.codex/auth.json` for live development and evals.
 - Chart/diagram structured semantics and exact LaTeX normalization remain experimental.
 - Direct `lmstudio-ocr` prompt modes are diagnostics, not the official structured OCR path.
 

@@ -111,7 +111,7 @@ export function registerCodexOcrCommands(program: Command): void {
     .option("--raw-output <file>", "Write raw Codex SDK/app-server response JSON to a file")
     .addOption(backendOption())
     .addOption(reasoningEffortOption("medium"))
-    .option("--codex-home <dir>", "Codex state directory; live dev tests use $HOME/.codex-test")
+    .option("--codex-home <dir>", "Codex state directory override; default is $HOME/.codex")
     .option("--codex-path <path>", "Path to the codex CLI binary")
     .option("--model <model>", "Codex model", CODEX_OCR_DEFAULTS.model)
     .option("--language <lang>", "Language hint", "en")
@@ -148,7 +148,7 @@ export function registerCodexOcrCommands(program: Command): void {
     .option("--port <port>", "Server port", String(DEFAULT_CODEX_OCR_PORT))
     .addOption(backendOption())
     .addOption(reasoningEffortOption("medium"))
-    .option("--codex-home <dir>", "Codex state directory; live dev tests use $HOME/.codex-test")
+    .option("--codex-home <dir>", "Codex state directory override; default is $HOME/.codex")
     .option("--codex-path <path>", "Path to the codex CLI binary")
     .option("--model <model>", "Codex model", CODEX_OCR_DEFAULTS.model)
     .option("--language <lang>", "Language hint", "en")
@@ -187,7 +187,7 @@ export function registerCodexOcrCommands(program: Command): void {
     .addOption(backendOption())
     .addOption(reasoningEffortOption("high"))
     .addOption(batchModeOption())
-    .option("--codex-home <dir>", "Codex state directory; live dev tests use $HOME/.codex-test")
+    .option("--codex-home <dir>", "Codex state directory override; default is $HOME/.codex")
     .option("--codex-path <path>", "Path to the codex CLI binary")
     .option("--model <model>", "Codex model", CODEX_OCR_DEFAULTS.model)
     .option("--language <lang>", "Language hint", "en")
@@ -481,7 +481,9 @@ function buildPipelinePageMarkdown(artifact: CodexOcrArtifact, fallbackPage: num
   ].filter(Boolean);
   const regionLines = parsed.layout_regions
     .filter((region) => isDocumentContextRegion(region.type) && region.text.trim())
-    .map((region) => `- ${region.type}${region.id ? ` (${region.id})` : ""}: ${region.text.trim()}`);
+    .map(
+      (region) => `- ${region.type}${region.id ? ` (${region.id})` : ""}: ${region.text.trim()}`
+    );
   const assetSections = parsed.assets
     .map((asset, index) => {
       const lines = [

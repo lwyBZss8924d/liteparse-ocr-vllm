@@ -15,9 +15,9 @@ Repository identity:
 - Custom branch: `custom/vllm-ocr-main`
 - Upstream mirror branch: `main`
 - npm package: `@zzwz/liteparse-vllm`
-- Current custom version: `1.5.3-custom.0`, based on upstream `v1.5.3`
+- Current custom version: `1.5.3-custom.1`, based on upstream `v1.5.3`
 
-Do not publish custom OCR releases from `main`. Keep upstream syncs on `main`, merge them into `custom/vllm-ocr-main`, and publish this fork from the custom branch with custom tags such as `custom-v1.5.3-ocr.0`.
+Do not publish custom OCR releases from `main`. Keep upstream syncs on `main`, merge them into `custom/vllm-ocr-main`, and publish this fork from the custom branch with custom tags such as `v1.5.3-custom.1`.
 
 ## Overview
 
@@ -123,7 +123,7 @@ lit glmocr-ocr-server
 lit parse document.pdf --ocr-server-url http://127.0.0.1:8831/ocr --format json
 
 # Parse with Codex OCR server for multimodal page understanding
-lit codex-ocr-server --codex-home "$HOME/.codex-test"
+lit codex-ocr-server
 lit parse document.pdf --ocr-server-url http://127.0.0.1:8833/ocr --format json
 ```
 
@@ -435,7 +435,7 @@ The image contains the LiteParse custom CLI, Node runtime dependencies, `@openai
 
 ```bash
 docker build -f Dockerfile.glmocr-offline \
-  -t liteparse-glmocr-vllm-offline:1.5.3-custom.0 \
+  -t liteparse-glmocr-vllm-offline:1.5.3-custom.1 \
   --build-arg VLLM_BASE_IMAGE=vllm/vllm-openai@sha256:9eff9734a30b6713a8566217d36f8277630fd2d31cec7f0a0292835901a23aa4 \
   --build-arg GLM_OCR_SDK_REF=cef4d0ea120d1741f5cefe8985eee45f6c8eff1d \
   --build-arg GLM_OCR_MODEL_REVISION=cb34f33832c51008c86436a3b2217bbe4adbe0b8 \
@@ -443,28 +443,28 @@ docker build -f Dockerfile.glmocr-offline \
   .
 
 docker save \
-  -o liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  -o liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 On the deployment host:
 
 ```bash
-docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar
 
 # Default profile: codex-ocr-server on :8833.
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
-  -v "$HOME/.codex-test:/codex-home" \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  -v "$HOME/.codex:/codex-home" \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 
 # Optional vLLM GLM-OCR profile.
 docker run --rm --gpus all --ipc=host --network=none \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1 smoke
 
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
   -e LITEPARSE_OCR_PROFILE=glmocr-vllm \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 The `codex` profile starts `lit codex-ocr-server` on port `8833`. The `glmocr-vllm` profile starts `vllm serve /opt/models/glm-ocr` on port `8000`, waits for `/v1/models`, then starts `lit glmocr-ocr-server` on port `8831` with `--layout-model-dir /opt/models/pp-doclayout`. The image sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` at runtime; build the image online once, then distribute the saved tar.
@@ -473,14 +473,14 @@ On a Linux x64 NVIDIA GPU host, run the release gate script after copying the ta
 
 ```bash
 scripts/validate-glmocr-offline-gpu.sh \
-  liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+  liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar
 ```
 
 This script loads the tar, checks image metadata, verifies Docker GPU runtime availability, runs the in-image offline smoke under `--network=none`, then validates container-internal `/health`, `POST /ocr`, and `lit parse --ocr-server-url http://127.0.0.1:8831/ocr`. On local hosts without NVIDIA GPU support, keep this as an explicit unverified gate and rerun it on the GPU deployment host.
 
 Codex OCR deployment options:
 
-- Mount a trusted Codex home: `-v "$HOME/.codex-test:/codex-home" -e LITEPARSE_CODEX_HOME=/codex-home`. This may include `auth.json` from `codex login` and `config.toml`; treat `auth.json` as a secret.
+- Mount a trusted Codex home: `-v "$HOME/.codex:/codex-home" -e LITEPARSE_CODEX_HOME=/codex-home`. This may include `auth.json` from `codex login` and `config.toml`; treat `auth.json` as a secret.
 - Use a custom Codex model provider in `/codex-home/config.toml`, then set `model_provider` to that provider id. Codex custom providers define `base_url`, `wire_api`, auth, and optional headers under `[model_providers.<id>]`.
 - Current official Codex config schema documents `wire_api = "responses"` for custom providers. For an OpenAI Chat Completions-compatible local endpoint, put an adapter/proxy in front of it that exposes a Responses/Open Responses-compatible API before using it as the Codex provider, unless your pinned Codex version documents another supported `wire_api`.
 
@@ -520,8 +520,8 @@ For agentic multimodal OCR, LiteParse can expose OpenAI Codex as a Custom HTTP O
 
 ```bash
 # Uses @openai/codex-sdk by default.
-# Live development/test state should use $HOME/.codex-test.
-lit codex-ocr-server --codex-home "$HOME/.codex-test"
+# Live tests should set HOME to a temp dir containing .codex/auth.json.
+lit codex-ocr-server
 
 lit parse document.pdf \
   --ocr-server-url http://127.0.0.1:8833/ocr \
@@ -537,7 +537,7 @@ lit codex-ocr-pipeline \
   --path document.pdf \
   --output ./codex-ocr-output \
   --target-pages "1-3" \
-  --codex-home "$HOME/.codex-test"
+  --json
 ```
 
 The artifact tree includes `pages/`, `codex/`, `liteparse/`, `assets/<type>/`, `annotations/`, `final/document.md`, `final/document.json`, and `manifest.json`. Final Markdown includes a LiteParse structured OCR context section that promotes page metadata, selected layout regions, and segmented asset details for downstream QA. Codex bounding boxes are model-inferred visual localization evidence and include `codex_bboxes_are_model_inferred` warnings; use `--strict-bbox` to drop regions without usable boxes.
@@ -597,7 +597,7 @@ choco install imagemagick.app # might require admin permissions
 | `LITEPARSE_GLMOCR_ROOT` | GLM-OCR SDK root used by `lit glmocr-ocr-server`. Docker defaults to `/opt/glm-ocr-sdk`; local installs may omit it when `glmocr` is importable. |
 | `LITEPARSE_GLMOCR_LAYOUT_MODEL_DIR` | PP-DocLayout model directory or Hub identifier. Docker defaults to `/opt/models/pp-doclayout`. |
 | `HF_HUB_OFFLINE` / `TRANSFORMERS_OFFLINE` | Set to `1` in the offline Docker image so Hugging Face and Transformers use only bundled model artifacts. |
-| `LITEPARSE_CODEX_HOME` | Codex state directory for Codex OCR. Use `$HOME/.codex-test` for live development/testing so OAuth tokens and config remain separate from normal Codex state. |
+| `LITEPARSE_CODEX_HOME` | Codex state directory for Codex OCR. Use `$HOME/.codex` for live development/testing so OAuth tokens and config remain separate from normal Codex state. |
 | `LITEPARSE_CODEX_OCR_MODEL` | Default Codex OCR model. Defaults to `gpt-5.5`; use `gpt-5.4-mini` for cheaper smoke tests. |
 | `LITEPARSE_CODEX_OCR_REASONING` | Default Codex OCR reasoning effort. Defaults to `medium`; the pipeline command defaults to `high`. |
 

@@ -18,8 +18,8 @@ This server implements the LiteParse `POST /ocr` multipart contract and exposes 
 ```bash
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
-  -v "$HOME/.codex-test:/codex-home" \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  -v "$HOME/.codex:/codex-home" \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 The mounted directory may contain `auth.json` for ChatGPT or API-key Codex auth, `config.toml`, or both. Treat `auth.json` as a secret because it contains access tokens.
@@ -32,7 +32,7 @@ For a local Open Responses-compatible endpoint, mount a Codex config such as `co
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
   -v "$PWD/docker/codex-ocr-server/config.local-open-responses.example.toml:/codex-home/config.toml:ro" \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 Codex custom providers are defined under `model_providers.<id>` and selected with `model_provider = "<id>"`. Current OpenAI Codex configuration schema documents `wire_api = "responses"` for custom providers. If you only have an OpenAI Chat Completions-compatible endpoint, put a local adapter or proxy in front of it that exposes a Responses/Open Responses-compatible API before using it as the Codex provider, unless your pinned Codex version documents another supported `wire_api`.
@@ -53,12 +53,12 @@ The GLM-OCR vLLM server remains available explicitly:
 ```bash
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
   -e LITEPARSE_OCR_PROFILE=glmocr-vllm \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 Use `smoke` for the GPU vLLM image smoke:
 
 ```bash
 docker run --rm --gpus all --ipc=host --network=none \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1 smoke
 ```
