@@ -15,9 +15,9 @@ Repository identity:
 - Custom branch: `custom/vllm-ocr-main`
 - Upstream mirror branch: `main`
 - npm package: `@zzwz/liteparse-vllm`
-- Current custom version: `1.5.3-custom.0`, based on upstream `v1.5.3`
+- Current custom version: `1.5.3-custom.1`, based on upstream `v1.5.3`
 
-Do not publish custom OCR releases from `main`. Keep upstream syncs on `main`, merge them into `custom/vllm-ocr-main`, and publish this fork from the custom branch with custom tags such as `custom-v1.5.3-ocr.0`.
+Do not publish custom OCR releases from `main`. Keep upstream syncs on `main`, merge them into `custom/vllm-ocr-main`, and publish this fork from the custom branch with custom tags such as `v1.5.3-custom.1`.
 
 ## Overview
 
@@ -435,7 +435,7 @@ The image contains the LiteParse custom CLI, Node runtime dependencies, `@openai
 
 ```bash
 docker build -f Dockerfile.glmocr-offline \
-  -t liteparse-glmocr-vllm-offline:1.5.3-custom.0 \
+  -t liteparse-glmocr-vllm-offline:1.5.3-custom.1 \
   --build-arg VLLM_BASE_IMAGE=vllm/vllm-openai@sha256:9eff9734a30b6713a8566217d36f8277630fd2d31cec7f0a0292835901a23aa4 \
   --build-arg GLM_OCR_SDK_REF=cef4d0ea120d1741f5cefe8985eee45f6c8eff1d \
   --build-arg GLM_OCR_MODEL_REVISION=cb34f33832c51008c86436a3b2217bbe4adbe0b8 \
@@ -443,28 +443,28 @@ docker build -f Dockerfile.glmocr-offline \
   .
 
 docker save \
-  -o liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  -o liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 On the deployment host:
 
 ```bash
-docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar
 
 # Default profile: codex-ocr-server on :8833.
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
   -v "$HOME/.codex:/codex-home" \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 
 # Optional vLLM GLM-OCR profile.
 docker run --rm --gpus all --ipc=host --network=none \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1 smoke
 
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
   -e LITEPARSE_OCR_PROFILE=glmocr-vllm \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 The `codex` profile starts `lit codex-ocr-server` on port `8833`. The `glmocr-vllm` profile starts `vllm serve /opt/models/glm-ocr` on port `8000`, waits for `/v1/models`, then starts `lit glmocr-ocr-server` on port `8831` with `--layout-model-dir /opt/models/pp-doclayout`. The image sets `HF_HUB_OFFLINE=1` and `TRANSFORMERS_OFFLINE=1` at runtime; build the image online once, then distribute the saved tar.
@@ -473,7 +473,7 @@ On a Linux x64 NVIDIA GPU host, run the release gate script after copying the ta
 
 ```bash
 scripts/validate-glmocr-offline-gpu.sh \
-  liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+  liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar
 ```
 
 This script loads the tar, checks image metadata, verifies Docker GPU runtime availability, runs the in-image offline smoke under `--network=none`, then validates container-internal `/health`, `POST /ocr`, and `lit parse --ocr-server-url http://127.0.0.1:8831/ocr`. On local hosts without NVIDIA GPU support, keep this as an explicit unverified gate and rerun it on the GPU deployment host.

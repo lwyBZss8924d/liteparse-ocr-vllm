@@ -1,5 +1,14 @@
 # @zzwz/liteparse-vllm
 
+## 1.5.3-custom.1
+
+### Custom Fork Changes
+
+- Merged upstream [`run-llama/liteparse` PR #157](https://github.com/run-llama/liteparse/pull/157), adding the upstream LiteParse server usage guide.
+- Released the local custom OCR updates after `1.5.3-custom.0`, including default `$HOME/.codex` Codex home resolution with `--codex-home`, `LITEPARSE_CODEX_HOME`, and `CODEX_HOME` kept as explicit overrides.
+- Documented Codex OCR health/config expectations for local, headless, and Docker deployments while preserving the baseline LiteParse `POST /ocr` multipart response contract.
+- Updated AGENTS and repo-versioned skill guidance so future agents keep custom branch, package, Codex auth/config, and skill projection boundaries aligned.
+
 ## 1.5.3-custom.0
 
 ### Custom Fork Changes

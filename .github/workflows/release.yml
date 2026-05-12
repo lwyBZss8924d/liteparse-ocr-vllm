@@ -1,9 +1,10 @@
 name: Release
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - "v1.5.3-custom.1"
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -11,11 +12,10 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/custom/vllm-ocr-main' || github.ref == 'refs/tags/v1.5.3-custom.1'
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
       id-token: write
-      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,25 +33,27 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          publish: npm run release
-          title: "chore: version packages"
-          commit: "chore: version packages"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Validate release package
+        run: |
+          npm prune --omit=dev
+          npm pack --dry-run --json
+          npm run smoke:offline-npm-tgz
 
-      - name: Dispatch post-publish workflow
-        if: steps.changesets.outputs.published == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'homebrew_release.yml',
-              ref: 'main',
-            })
+      - name: Publish npm package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          package_name="@zzwz/liteparse-vllm"
+          expected_version="1.5.3-custom.1"
+          actual_version="$(node -p "require('./package.json').version")"
+          test "${actual_version}" = "${expected_version}"
+
+          if npm view "${package_name}@${expected_version}" version >/dev/null 2>&1; then
+            echo "${package_name}@${expected_version} is already published; refreshing dist-tags only."
+          else
+            npm publish --access public --tag latest --provenance
+          fi
+
+          npm dist-tag add "${package_name}@${expected_version}" latest
+          npm dist-tag add "${package_name}@${expected_version}" custom

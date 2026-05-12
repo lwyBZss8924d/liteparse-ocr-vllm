@@ -481,7 +481,9 @@ function buildPipelinePageMarkdown(artifact: CodexOcrArtifact, fallbackPage: num
   ].filter(Boolean);
   const regionLines = parsed.layout_regions
     .filter((region) => isDocumentContextRegion(region.type) && region.text.trim())
-    .map((region) => `- ${region.type}${region.id ? ` (${region.id})` : ""}: ${region.text.trim()}`);
+    .map(
+      (region) => `- ${region.type}${region.id ? ` (${region.id})` : ""}: ${region.text.trim()}`
+    );
   const assetSections = parsed.assets
     .map((asset, index) => {
       const lines = [

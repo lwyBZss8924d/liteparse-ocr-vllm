@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-image="${LITEPARSE_OFFLINE_IMAGE:-liteparse-glmocr-vllm-offline:1.5.3-custom.0}"
+image="${LITEPARSE_OFFLINE_IMAGE:-liteparse-glmocr-vllm-offline:1.5.3-custom.1}"
 tar_path="${1:-${LITEPARSE_OFFLINE_IMAGE_TAR:-}}"
-default_tar=".tmp/release/docker/liteparse-glmocr-vllm-offline-1.5.3-custom.0-linux-amd64.tar"
+default_tar=".tmp/release/docker/liteparse-glmocr-vllm-offline-1.5.3-custom.1-linux-amd64.tar"
 if [[ -z "${tar_path}" && -f "${default_tar}" ]]; then
   tar_path="${default_tar}"
 fi

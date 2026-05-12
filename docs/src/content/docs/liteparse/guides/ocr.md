@@ -96,17 +96,17 @@ For air-gapped GPU delivery, build the vLLM-only image online once and transfer 
 
 ```bash
 docker build -f Dockerfile.glmocr-offline \
-  -t liteparse-glmocr-vllm-offline:1.5.3-custom.0 .
-docker save -o liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  -t liteparse-glmocr-vllm-offline:1.5.3-custom.1 .
+docker save -o liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar \
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 On the offline host, validate the bundled model artifacts and local loopback path:
 
 ```bash
-docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.0.tar
+docker load -i liteparse-glmocr-vllm-offline-1.5.3-custom.1.tar
 docker run --rm --gpus all --ipc=host --network=none \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0 smoke
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1 smoke
 ```
 
 ### LM Studio GLM-OCR Direct Wrapper

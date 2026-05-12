@@ -85,12 +85,12 @@ lit glmocr-ocr-server
 docker run --rm -p 8833:8833 \
   -e LITEPARSE_CODEX_HOME=/codex-home \
   -v "$HOME/.codex:/codex-home" \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 
 # OR start the optional offline vLLM GLM-OCR image after docker load on a GPU serving host
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
   -e LITEPARSE_OCR_PROFILE=glmocr-vllm \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 
 # OR start the LM Studio direct wrapper
 lit lmstudio-ocr-server

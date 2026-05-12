@@ -451,11 +451,9 @@ async function waitForHttpHealth(
 }
 
 function resolveGlmOcrRoot(inputRoot?: string): string | undefined {
-  const candidates = [
-    inputRoot,
-    process.env.LITEPARSE_GLMOCR_ROOT,
-    "/opt/glm-ocr-sdk",
-  ].filter((value): value is string => Boolean(value));
+  const candidates = [inputRoot, process.env.LITEPARSE_GLMOCR_ROOT, "/opt/glm-ocr-sdk"].filter(
+    (value): value is string => Boolean(value)
+  );
   return candidates.find((candidate) => existsSync(path.join(candidate, "glmocr", "__init__.py")));
 }
 

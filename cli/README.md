@@ -66,7 +66,7 @@ Offline vLLM image entrypoint:
 
 ```bash
 docker run --rm --gpus all --ipc=host -p 8831:8831 \
-  liteparse-glmocr-vllm-offline:1.5.3-custom.0
+  liteparse-glmocr-vllm-offline:1.5.3-custom.1
 ```
 
 ---
