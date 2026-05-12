@@ -16,6 +16,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -57,3 +58,40 @@ jobs:
 
           npm dist-tag add "${package_name}@${expected_version}" latest
           npm dist-tag add "${package_name}@${expected_version}" custom
+
+      - name: Publish GitHub Packages mirror
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          package_name="@lwybzss8924d/liteparse-vllm"
+          expected_version="1.5.3-custom.1"
+          actual_version="$(node -p "require('./package.json').version")"
+          test "${actual_version}" = "${expected_version}"
+
+          npmrc="$(mktemp)"
+          original_package_json="$(mktemp)"
+          cp package.json "${original_package_json}"
+          trap 'cp "${original_package_json}" package.json; rm -f "${npmrc}" "${original_package_json}"' EXIT
+
+          {
+            echo "@lwybzss8924d:registry=https://npm.pkg.github.com"
+            echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}"
+          } > "${npmrc}"
+          export NPM_CONFIG_USERCONFIG="${npmrc}"
+
+          if npm view "${package_name}@${expected_version}" version --registry=https://npm.pkg.github.com >/dev/null 2>&1; then
+            echo "${package_name}@${expected_version} is already published to GitHub Packages."
+          else
+            node <<'NODE'
+          const fs = require("node:fs");
+          const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          pkg.name = "@lwybzss8924d/liteparse-vllm";
+          pkg.publishConfig = {
+            ...(pkg.publishConfig ?? {}),
+            registry: "https://npm.pkg.github.com",
+          };
+          fs.writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
+          NODE
+            npm publish --registry=https://npm.pkg.github.com --tag latest
+          fi

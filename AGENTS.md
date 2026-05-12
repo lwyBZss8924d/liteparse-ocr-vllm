@@ -11,9 +11,10 @@ This repository is an independent custom OCR fork of upstream `run-llama/litepar
 - Custom branch: `custom/vllm-ocr-main`
 - Upstream mirror branch: `main`
 - Custom npm package: `@zzwz/liteparse-vllm`
+- GitHub Packages mirror: `@lwybzss8924d/liteparse-vllm` under the fork owner namespace, because GitHub Packages requires the npm scope to match the GitHub owner namespace
 - Current custom version: `1.5.3-custom.1` using the upstream version plus custom suffix pattern
 
-Keep `main` as an upstream mirror. Do not publish custom OCR releases from `main`; merge upstream `main` into `custom/vllm-ocr-main` and publish custom tags such as `v1.5.3-custom.1` only from the custom branch. When README, packaging, release, or CI identity changes, update this AGENTS.md file in the same change so future agents do not fall back to upstream assumptions.
+Keep `main` as an upstream mirror. Do not publish custom OCR releases from `main`; merge upstream `main` into `custom/vllm-ocr-main` and publish custom tags such as `v1.5.3-custom.1` only from the custom branch. Release workflows should publish both the npmjs package (`@zzwz/liteparse-vllm`) and the GitHub Packages mirror (`@lwybzss8924d/liteparse-vllm`). When README, packaging, release, or CI identity changes, update this AGENTS.md file in the same change so future agents do not fall back to upstream assumptions.
 
 ## Project Overview
 
