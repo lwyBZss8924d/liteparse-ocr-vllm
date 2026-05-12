@@ -7,7 +7,7 @@ RUN npm ci --ignore-scripts=false
 
 COPY src/ ./src/
 COPY cli/ ./cli/
-COPY tsconfig.json ./
+COPY tsconfig.json tsconfig.build.json ./
 RUN npm run build
 
 # Stage 2: Minimal runtime image
