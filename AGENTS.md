@@ -170,7 +170,7 @@ In CI, use source-only validation and avoid projection writes:
 npm run validate:agent-skills:source -- --skip-cli
 ```
 
-Projection targets are expected to point at the installed runtime projection under `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`; keep `.codex`, `.codex`, `.claude`, Forge, and Gemini projections aligned through `scripts/sync-liteparse-cli-skills.mjs`, not manual edits.
+Projection targets are expected to point at the installed runtime projection under `~/.agents/skills/liteparse-cli-tools-custom-collection`; keep `.codex`, `.codex`, `.claude`, Forge, and Gemini projections aligned through `scripts/sync-liteparse-cli-skills.mjs`, not manual edits.
 
 ## Knowledge And Skills
 
@@ -178,7 +178,7 @@ Projection targets are expected to point at the installed runtime projection und
 
 <REAL_ENGINEERS_CODEX_PLUGIN_SKILLS>
 - **Collection**: `mattpocock-skills`
-- **Plugin source**: `/Users/arthur/dev-space/mattpocock/skills/plugins/mattpocock-skills`
+- **Plugin source**: `~/dev-space/mattpocock/skills/plugins/mattpocock-skills`
 - **Use `mattpocock-skills:setup-matt-pocock-skills`** before repo-local use of issue, PRD, triage, diagnosis, TDD, architecture, or zoom-out workflows when project issue-tracker/domain-doc assumptions are not already configured.
 
 Engineering:
