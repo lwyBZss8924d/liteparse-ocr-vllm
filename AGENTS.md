@@ -172,6 +172,40 @@ npm run validate:agent-skills:source -- --skip-cli
 
 Projection targets are expected to point at the installed runtime projection under `/Users/arthur/.agents/skills/liteparse-cli-tools-custom-collection`; keep `.codex`, `.codex`, `.claude`, Forge, and Gemini projections aligned through `scripts/sync-liteparse-cli-skills.mjs`, not manual edits.
 
+## Knowledge And Skills
+
+### Skills For Real Engineers Codex Plugin
+
+<REAL_ENGINEERS_CODEX_PLUGIN_SKILLS>
+- **Collection**: `mattpocock-skills`
+- **Plugin source**: `/Users/arthur/dev-space/mattpocock/skills/plugins/mattpocock-skills`
+- **Use `mattpocock-skills:setup-matt-pocock-skills`** before repo-local use of issue, PRD, triage, diagnosis, TDD, architecture, or zoom-out workflows when project issue-tracker/domain-doc assumptions are not already configured.
+
+Engineering:
+- `mattpocock-skills:diagnose`
+- `mattpocock-skills:grill-with-docs`
+- `mattpocock-skills:improve-codebase-architecture`
+- `mattpocock-skills:prototype`
+- `mattpocock-skills:setup-matt-pocock-skills`
+- `mattpocock-skills:tdd`
+- `mattpocock-skills:to-issues`
+- `mattpocock-skills:to-prd`
+- `mattpocock-skills:triage`
+- `mattpocock-skills:zoom-out`
+
+Productivity:
+- `mattpocock-skills:caveman`
+- `mattpocock-skills:grill-me`
+- `mattpocock-skills:handoff`
+- `mattpocock-skills:write-a-skill`
+
+Misc:
+- `mattpocock-skills:git-guardrails-claude-code`
+- `mattpocock-skills:migrate-to-shoehorn`
+- `mattpocock-skills:scaffold-exercises`
+- `mattpocock-skills:setup-pre-commit`
+</REAL_ENGINEERS_CODEX_PLUGIN_SKILLS>
+
 ## Testing Approach
 
 Use focused automated checks for changed surfaces:
