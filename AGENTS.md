@@ -12,9 +12,53 @@ This repository is an independent custom OCR fork of upstream `run-llama/litepar
 - Custom V2 branch: `custom/liteparse-vllm-v2`
 - Custom npm package: `@zzwz/liteparse-vllm`
 - Current V2 custom version: `2.0.6-custom.0`
-- MVP custom scope: Codex SDK OCR server only
+- Maintained fork diff authority: `docs/fork-maintenance/`
+- Maintained V2 skill source: `skills/liteparse-ocr-vllm/SKILL.md`
+- MVP custom scope: Codex SDK OCR server plus the minimum package, timeout, native-loading, docs, and eval tooling needed to run and validate that server
 
 Keep the V2 Rust core close to upstream. Do not port the old TypeScript parser/core from `1.5.3-custom.1` into this branch. For this V2 MVP, defer GLM-OCR, LM Studio, vLLM Docker/offline packaging, Python package customization, WASM customization, and the custom native optional package matrix unless explicitly requested.
+
+Do not describe this branch as "only Codex OCR Server differs from upstream".
+The precise maintained delta is documented in `docs/fork-maintenance/`: custom
+package identity, Codex SDK OCR CLI/server, configurable HTTP OCR timeout,
+custom native loading policy, eval tooling for Codex OCR evidence runs, and
+docs/local artifact guardrails.
+
+## Fork Diff and Maintenance Authority
+
+Before answering upstream-alignment questions or changing custom fork behavior,
+read the relevant files under `docs/fork-maintenance/`.
+
+- `docs/fork-maintenance/README.md` is the entry point and current baseline.
+- `docs/fork-maintenance/fork-diff-v2.0.6.md` classifies the intentional delta
+  against upstream `crates-v2.0.6`.
+- `docs/fork-maintenance/version-maintenance.md` defines baseline upgrade,
+  version, merge, release, and verification rules.
+- `docs/fork-maintenance/codex-ocr-agent.md` defines the custom Codex OCR
+  CLI/server contract and test boundary.
+
+When a change affects any maintained fork delta, update `docs/fork-maintenance/`
+and this `AGENTS.md` in the same change. Maintained deltas include package
+identity, Codex OCR server behavior, HTTP OCR timeout behavior, native loading
+policy, eval utilities, repo-maintained skills, and user-facing docs.
+
+The repo-maintained V2 skill suite is `skills/liteparse-ocr-vllm`. The installed
+global projection is `$HOME/.agents/skills/liteparse-ocr-vllm`; update that
+projection only from this repo's V2 source skill.
+
+Use these commands as the starting point for diff audits:
+
+```bash
+git fetch upstream --tags --prune
+git rev-parse refs/tags/crates-v2.0.6^{commit} HEAD
+git rev-list --left-right --count refs/tags/crates-v2.0.6^{commit}...HEAD
+git diff --name-status refs/tags/crates-v2.0.6^{commit}..HEAD
+```
+
+Parser-core files such as `projection.rs`, `extract.rs`, `render.rs`,
+`conversion.rs`, `ocr_merge.rs`, `output/**`, `search.rs`, `lib.rs`, and
+`types.rs` should remain upstream-aligned unless a future request explicitly
+expands the fork scope.
 
 ## Project Overview
 
@@ -79,6 +123,13 @@ liteparse/
 ├── ocr/                    # Example OCR server implementations
 │   ├── easyocr/            # EasyOCR wrapper server
 │   └── paddleocr/          # PaddleOCR wrapper server
+├── docs/
+│   └── fork-maintenance/   # Maintained fork diff, version, and Codex OCR agent docs
+├── skills/
+│   ├── metadata.json       # Repo-maintained skill metadata
+│   ├── harness/            # Skill validation contract
+│   ├── scripts/            # Skill metadata/version/frontmatter validators
+│   └── liteparse-ocr-vllm/ # V2 LiteParse OCR-VLLM skill source
 └── Cargo.toml              # Workspace root
 ```
 
@@ -186,6 +237,33 @@ Key files in `crates/liteparse/src/`:
 - Types are in `packages/python/liteparse/types.py`
 - CLI entry point is `packages/python/liteparse/cli.py`
 
+### Maintaining Fork Diff Documentation
+1. Classify the change domain in `docs/fork-maintenance/fork-diff-v2.0.6.md`
+   or add a new `fork-diff-v<version>.md` when the upstream baseline changes.
+2. Update `docs/fork-maintenance/version-maintenance.md` if branch, version,
+   release, merge, or verification rules change.
+3. Update `docs/fork-maintenance/codex-ocr-agent.md` when the Codex OCR
+   CLI/server contract changes.
+4. Update this `AGENTS.md` and user-facing docs when the maintained custom
+   delta or release wording changes.
+
+### Maintaining LiteParse OCR-VLLM Skills
+1. Edit `skills/liteparse-ocr-vllm/SKILL.md` and
+   `skills/liteparse-ocr-vllm/agents/openai.yaml` as the source authority.
+2. Keep `skills/metadata.json` version aligned with the skill frontmatter.
+3. Update `skills/harness/liteparse-ocr-vllm-skills.spec.json` whenever the
+   skill command surface, required terms, or deferred terms change.
+4. Validate with:
+
+   ```bash
+   python3 skills/scripts/ensure_frontmatter.py
+   python3 skills/scripts/validate_liteparse_ocr_vllm_skills.py
+   ```
+
+5. Do not copy the old `custom/vllm-ocr-main` collection directly. The V2 MVP
+   skill must not advertise `glmocr-*`, `lmstudio-*`, or `codex-ocr-pipeline`
+   as available commands unless those features are reintroduced.
+
 ## Key Dependencies
 
 | Dependency | Purpose |
@@ -217,6 +295,11 @@ Key files in `crates/liteparse/src/`:
 
 - [User-facing documentation](README.md)
 - [OCR API Specification](OCR_API_SPEC.md)
+- [Fork maintenance overview](docs/fork-maintenance/README.md)
+- [Fork diff against V2.0.6](docs/fork-maintenance/fork-diff-v2.0.6.md)
+- [Version maintenance guide](docs/fork-maintenance/version-maintenance.md)
+- [Codex OCR Agent guide](docs/fork-maintenance/codex-ocr-agent.md)
+- [LiteParse OCR-VLLM skill](skills/liteparse-ocr-vllm/SKILL.md)
 - [WASM package README](packages/wasm/README.md)
 - [Python package README](packages/python/README.md)
 - [OCR server examples](ocr/README.md)

@@ -129,13 +129,20 @@ Install via your preferred package manager. All versions (except WASM) ship with
 
 ### Agent Skill
 
-You can use `liteparse` as an agent skill, downloading it with the `skills` CLI tool:
+This fork maintains its V2 skill source in
+[`skills/liteparse-ocr-vllm/SKILL.md`](skills/liteparse-ocr-vllm/SKILL.md).
+It covers local LiteParse V2 parsing plus the custom Codex SDK OCR server pipe.
+
+Validate the repo-maintained skill source with:
 
 ```bash
-npx skills add run-llama/llamaparse-agent-skills --skill liteparse
+python3 skills/scripts/ensure_frontmatter.py
+python3 skills/scripts/validate_liteparse_ocr_vllm_skills.py
 ```
 
-Or copy-pasting the [`SKILL.md`](https://github.com/run-llama/llamaparse-agent-skills/blob/main/skills/liteparse/SKILL.md) file to your own skills setup.
+The upstream generic LiteParse skill is useful context, but it targets
+`@llamaindex/liteparse`. Use this repo's `liteparse-ocr-vllm` skill for
+`@zzwz/liteparse-vllm` and Codex OCR server workflows.
 
 ## CLI Usage
 

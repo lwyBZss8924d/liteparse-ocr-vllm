@@ -41,7 +41,7 @@
   "scripts": {
     "build:rs": "napi build --cargo-cwd ../../crates/liteparse-napi --platform --release --js false --dts native.d.ts .",
     "build:pdfium": "bash scripts/copy-pdfium.sh .",
-    "build:ts": "tsc",
+    "build:ts": "tsc && node -e \"require('node:fs').chmodSync('dist/cli.js', 0o755)\"",
     "build": "npm run build:rs && npm run build:pdfium && npm run build:ts",
     "test:codex-ocr": "npm run build:ts && node --test test/codex-ocr/*.test.mjs",
     "prepublishOnly": "npm run build"

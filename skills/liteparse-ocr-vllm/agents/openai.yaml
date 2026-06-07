@@ -1,0 +1,3 @@
+display_name: LiteParse OCR-VLLM
+short_description: Local LiteParse V2 parsing with the custom Codex OCR server pipe.
+default_prompt: Parse a document locally with LiteParse OCR-VLLM, or start and validate the Codex OCR server pipe.

@@ -1,0 +1,63 @@
+{
+  "name": "liteparse-ocr-vllm-skills",
+  "source_root": "skills/liteparse-ocr-vllm",
+  "metadata_file": "skills/metadata.json",
+  "installed_root": "$HOME/.agents/skills/liteparse-ocr-vllm",
+  "sync_mode": "source_only_until_explicit_install",
+  "expected_files": [
+    "skills/metadata.json",
+    "skills/liteparse-ocr-vllm/SKILL.md",
+    "skills/liteparse-ocr-vllm/agents/openai.yaml"
+  ],
+  "expected_tooling_files": [
+    "skills/scripts/add_skill.py",
+    "skills/scripts/bump_version.py",
+    "skills/scripts/ensure_frontmatter.py",
+    "skills/scripts/validate_liteparse_ocr_vllm_skills.py"
+  ],
+  "frontmatter": {
+    "name": "liteparse-ocr-vllm",
+    "metadata_version": "0.1.0",
+    "metadata_author": "LiteParse OCR-VLLM Maintainers"
+  },
+  "required_terms": [
+    "@zzwz/liteparse-vllm",
+    "crates-v2.0.6",
+    "codex-ocr",
+    "codex-ocr-server",
+    "POST /ocr",
+    "POST /ocr/analyze",
+    "--ocr-server-url",
+    "--ocr-timeout-ms",
+    "$HOME/.codex-test",
+    "codex_bboxes_are_model_inferred",
+    "results[].text",
+    "results[].bbox",
+    "results[].confidence"
+  ],
+  "forbidden_terms": [
+    "dist/src/index.js",
+    "src/engines/ocr/codex.ts",
+    "src/engines/ocr/codex-server.ts",
+    "liteparse-cli-tools-custom-collection",
+    "codex-ocr-pipeline",
+    "glmocr",
+    "lmstudio"
+  ],
+  "deferred_terms": [],
+  "docs_required_terms": {
+    "AGENTS.md": [
+      "skills/liteparse-ocr-vllm/SKILL.md",
+      "docs/fork-maintenance/",
+      "liteparse-ocr-vllm"
+    ],
+    "docs/fork-maintenance/README.md": [
+      "skills/liteparse-ocr-vllm",
+      "0.1.0"
+    ],
+    "docs/fork-maintenance/codex-ocr-agent.md": [
+      "skills/liteparse-ocr-vllm",
+      "validate_liteparse_ocr_vllm_skills.py"
+    ]
+  }
+}
