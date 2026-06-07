@@ -1,10 +1,10 @@
-# LiteParse
+# LiteParse V2 Custom Codex OCR
 
 [![CI](https://github.com/run-llama/liteparse/actions/workflows/ci.yml/badge.svg)](https://github.com/run-llama/liteparse/actions/workflows/ci.yml)
 |
 [![Crates.io version](https://img.shields.io/crates/v/liteparse.svg)](https://crates.io/crates/liteparse)
 |
-[![npm version](https://img.shields.io/npm/v/@llamaindex/liteparse.svg)](https://www.npmjs.com/package/@llamaindex/liteparse)
+[![npm version](https://img.shields.io/npm/v/@zzwz/liteparse-vllm.svg)](https://www.npmjs.com/package/@zzwz/liteparse-vllm)
 |
 [![wasm version](https://img.shields.io/npm/v/@llamaindex/liteparse-wasm.svg)](https://www.npmjs.com/package/@llamaindex/liteparse-wasm)
 |
@@ -20,7 +20,9 @@ English | [简体中文](README.zh-CN.md)
 
 > Looking for LiteParse V1? Follow this link to [the old code](https://github.com/run-llama/liteparse/tree/logan/liteparse-v1)
 
-LiteParse is a standalone OSS PDF parsing tool focused exclusively on **fast and light** parsing. It provides high-quality spatial text parsing with bounding boxes, without proprietary LLM features or cloud dependencies. Everything runs locally on your machine.
+This branch is a custom V2 fork of upstream LiteParse `crates-v2.0.6`. It keeps the Rust/napi core close to upstream and changes the Node package identity to `@zzwz/liteparse-vllm@2.0.6-custom.0`.
+
+LiteParse is a standalone OSS PDF parsing tool focused exclusively on **fast and light** parsing. It provides high-quality spatial text parsing with bounding boxes, without proprietary LLM features or cloud dependencies. The baseline parser and built-in OCR run locally on your machine. This custom fork also adds an optional, authenticated Codex SDK OCR server for documents that need model-backed OCR diagnostics.
 
 **Hitting the limits of local parsing?**
 For complex documents (dense tables, multi-column layouts, charts, handwritten text, or
@@ -120,7 +122,7 @@ Install via your preferred package manager. All versions (except WASM) ship with
 
 | Language | Install | Library Docs |
 |----------|---------|--------------|
-| **Node.js / TypeScript** | `npm i @llamaindex/liteparse` | [Node.js README](packages/node/README.md) |
+| **Node.js / TypeScript** | `npm i @zzwz/liteparse-vllm` | [Node.js README](packages/node/README.md) |
 | **Python** | `pip install liteparse` | [Python README](packages/python/README.md) |
 | **Rust** | `cargo install liteparse` (CLI) / `cargo add liteparse` (lib) | [Rust README (crates.io)](crates/liteparse/README.md) |
 | **Browser (WASM)** | `npm i @llamaindex/liteparse-wasm` | [WASM README](packages/wasm/README.md) |
@@ -271,6 +273,7 @@ For higher accuracy or better performance, you can use an HTTP OCR server. We pr
 
 - [EasyOCR](ocr/easyocr/README.md)
 - [PaddleOCR](ocr/paddleocr/README.md)
+- Codex SDK OCR server in the custom Node package
 
 You can integrate any OCR service by implementing the simple LiteParse OCR API specification (see [`OCR_API_SPEC.md`](OCR_API_SPEC.md)).
 
@@ -278,6 +281,37 @@ The API requires:
 - POST `/ocr` endpoint
 - Accepts `file` and `language` parameters
 - Returns JSON: `{ results: [{ text, bbox: [x1,y1,x2,y2], confidence }] }`
+
+#### Custom Codex SDK OCR Server
+
+The custom Node package includes `lit codex-ocr` and `lit codex-ocr-server`. This path is SDK-only and uses `@openai/codex-sdk`; it is online/authenticated and must be configured with a readable Codex home.
+
+For live tests in this fork, use `~/.codex-test` as the Codex home root:
+
+```bash
+cd packages/node
+npm run build
+node dist/cli.js codex-ocr-server \
+  --host 127.0.0.1 \
+  --port 8833 \
+  --codex-home "$HOME/.codex-test"
+```
+
+The server exposes:
+
+- `GET /health` for readiness, model, reasoning effort, resolved `codex_home`, and auth/config readability.
+- `POST /ocr` for LiteParse-compatible OCR results.
+- `POST /ocr/analyze` for the richer Codex OCR artifact.
+
+Use it through the standard LiteParse OCR server option:
+
+```bash
+node dist/cli.js parse ../../integration_tests_data/receipt.png \
+  --ocr-server-url http://127.0.0.1:8833/ocr \
+  --format json
+```
+
+Codex bounding boxes are model-inferred visual localization evidence, not deterministic layout-detector output. Successful Codex OCR warning context includes `codex_bboxes_are_model_inferred`.
 
 ## Multi-Format Input Support
 
@@ -326,6 +360,7 @@ choco install imagemagick.app
 | Variable | Description |
 |----------|-------------|
 | `TESSDATA_PREFIX` | Path to a directory containing Tesseract `.traineddata` files. Used for offline/air-gapped environments. |
+| `LITEPARSE_CODEX_HOME` | Codex home directory for the custom Codex SDK OCR server. For local live tests in this fork, use `$HOME/.codex-test`. |
 
 ## Development
 

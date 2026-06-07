@@ -58,6 +58,10 @@ struct ParseCommand {
     #[arg(long, default_value = None)]
     ocr_server_url: Option<String>,
 
+    /// HTTP OCR request timeout in milliseconds
+    #[arg(long)]
+    ocr_timeout_ms: Option<u64>,
+
     /// Path to tessdata directory (overrides TESSDATA_PREFIX env var)
     #[arg(long)]
     tessdata_path: Option<String>,
@@ -141,6 +145,10 @@ struct BatchParseCommand {
     #[arg(long, default_value = None)]
     ocr_server_url: Option<String>,
 
+    /// HTTP OCR request timeout in milliseconds
+    #[arg(long)]
+    ocr_timeout_ms: Option<u64>,
+
     /// Path to tessdata directory (overrides TESSDATA_PREFIX env var)
     #[arg(long)]
     tessdata_path: Option<String>,
@@ -215,6 +223,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ocr_server_url: cmd.ocr_server_url,
                 ..Default::default()
             };
+            if let Some(timeout_ms) = cmd.ocr_timeout_ms {
+                config.ocr_timeout_ms = timeout_ms;
+            }
             if let Some(n) = cmd.num_workers {
                 config.num_workers = n;
             }
@@ -297,6 +308,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ocr_server_url: cmd.ocr_server_url,
                 ..Default::default()
             };
+            if let Some(timeout_ms) = cmd.ocr_timeout_ms {
+                config.ocr_timeout_ms = timeout_ms;
+            }
             if let Some(n) = cmd.num_workers {
                 config.num_workers = n;
             }

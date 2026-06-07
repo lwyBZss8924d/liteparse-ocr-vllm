@@ -1,10 +1,26 @@
-# LiteParse - Agent Documentation
+# LiteParse V2 Custom Codex OCR - Agent Documentation
 
 > This file provides comprehensive context for AI coding agents working on this codebase.
 
+## Fork Identity and Branch Discipline
+
+This repository is an independent custom OCR fork of upstream `run-llama/liteparse`.
+
+- Fork remote: `origin = https://github.com/lwyBZss8924d/liteparse-ocr-vllm.git`
+- Upstream remote: `upstream = https://github.com/run-llama/liteparse.git`
+- Upstream V2 baseline: `crates-v2.0.6` / `upstream/main@314a4df`
+- Custom V2 branch: `custom/liteparse-vllm-v2`
+- Custom npm package: `@zzwz/liteparse-vllm`
+- Current V2 custom version: `2.0.6-custom.0`
+- MVP custom scope: Codex SDK OCR server only
+
+Keep the V2 Rust core close to upstream. Do not port the old TypeScript parser/core from `1.5.3-custom.1` into this branch. For this V2 MVP, defer GLM-OCR, LM Studio, vLLM Docker/offline packaging, Python package customization, WASM customization, and the custom native optional package matrix unless explicitly requested.
+
 ## Project Overview
 
-**LiteParse** is an open-source PDF parsing library written in **Rust**, focused on fast, lightweight document processing with spatial text extraction. It runs entirely locally with zero cloud dependencies by default.
+**LiteParse V2 Custom Codex OCR** is a custom Node package fork over upstream LiteParse V2. The baseline parser is an open-source PDF parsing library written in **Rust**, focused on fast, lightweight document processing with spatial text extraction. It runs locally by default.
+
+The custom Node package adds `lit codex-ocr` and `lit codex-ocr-server`, backed by `@openai/codex-sdk`. Codex OCR is online/authenticated diagnostics and must be documented as such.
 
 Language bindings are provided for **Node.js/TypeScript** (via napi-rs), **Python** (via PyO3), and **WebAssembly** (via wasm-bindgen).
 
@@ -51,7 +67,8 @@ liteparse/
 │   │   └── src/
 │   │       ├── lib.ts          # Public LiteParse class for Node.js
 │   │       ├── cli.ts          # CLI entry point (commander)
-│   │       └── native.ts       # Native binary loader
+│   │       ├── native.ts       # Native binary loader
+│   │       └── codex-ocr/      # Custom Codex SDK OCR CLI/server
 │   ├── python/             # PyPI package: Python wrapper around native binary
 │   │   └── liteparse/
 │   │       ├── __init__.py
@@ -108,6 +125,32 @@ Uses a default-first approach where users only override what they need. See `cra
 ### 6. Format Conversion via External Tools
 Rather than implementing format parsers, LiteParse converts non-PDF formats using system tools (LibreOffice, ImageMagick) into PDF. This provides broad format support with minimal code.
 
+### 7. Codex OCR Diagnostics Boundary
+
+Codex OCR is implemented under `packages/node/src/codex-ocr/`.
+
+- `codex.ts` owns Codex SDK invocation, prompt/schema handling, raw response preservation, and conversion from advanced artifacts into LiteParse OCR results.
+- `server.ts` owns HTTP serving for `GET /health`, multipart `POST /ocr`, and multipart `POST /ocr/analyze`.
+- `cli.ts` owns `lit codex-ocr` and `lit codex-ocr-server` registration.
+- `POST /ocr` must keep the LiteParse OCR contract: multipart `file`, optional `language`, and JSON `results[].text`, `results[].bbox`, `results[].confidence`.
+- `POST /ocr/analyze` may return the richer Codex artifact: Markdown, page metadata, layout regions, assets, annotations, conversion metadata, model provenance, and warnings.
+- Codex bounding boxes are model-inferred visual localization evidence, not deterministic layout-detector boxes. Preserve `codex_bboxes_are_model_inferred` warnings and keep `--strict-bbox` behavior available.
+- This V2 MVP is SDK-only. Do not reintroduce the old `app-server` backend or `codex-ocr-pipeline` unless explicitly requested after the basic server remains passing.
+
+Live development and tests should use the isolated Codex test home:
+
+```bash
+LITEPARSE_CODEX_HOME="$HOME/.codex-test"
+```
+
+or:
+
+```bash
+--codex-home "$HOME/.codex-test"
+```
+
+Treat `$HOME/.codex-test` as the Codex home root containing `auth.json` and `config.toml`, not as a parent that contains `.codex/`. Do not print, copy into tracked files, package, or document the contents of those files.
+
 ## Common Tasks
 
 ### Adding a New Output Format
@@ -136,6 +179,7 @@ Key files in `crates/liteparse/src/`:
 - Edit `packages/node/src/lib.ts` for library API changes
 - Edit `packages/node/src/cli.ts` for CLI changes
 - The native binary interface is defined in `packages/node/src/native.ts`
+- Edit `packages/node/src/codex-ocr/**` for the custom Codex SDK OCR CLI/server. Keep this SDK-only for the V2 MVP.
 
 ### Adding / Modifying Python Wrapper
 - Edit `packages/python/liteparse/parser.py` for library API changes
@@ -156,12 +200,16 @@ Key files in `crates/liteparse/src/`:
 | `napi-rs` | Node.js native bindings |
 | `pyo3` / `maturin` | Python native bindings |
 | `wasm-bindgen` | WASM bindings |
+| `@openai/codex-sdk` | Custom Node Codex OCR diagnostic backend |
+| `busboy` | Multipart upload handling for the custom Codex OCR server |
+| `sharp` | Image normalization for Codex OCR input |
 
 ## Entry Points
 
 - **Rust CLI**: `crates/liteparse/src/main.rs`
 - **Rust Library**: `crates/liteparse/src/lib.rs` → `parser.rs` contains `LiteParse` struct
 - **Node.js**: `packages/node/src/lib.ts` exports `LiteParse` class
+- **Codex OCR CLI/Server**: `packages/node/src/codex-ocr/`
 - **Python**: `packages/python/liteparse/parser.py` exports `LiteParse` class
 - **WASM**: `crates/liteparse-wasm/` exposes `LiteParse` via wasm-bindgen
 

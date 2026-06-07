@@ -21,6 +21,7 @@ dependencies = [
 lp-evaluate = "liteparse_eval.evaluation:main"
 lp-process = "liteparse_eval.processing:main"
 lp-benchmark = "liteparse_eval.benchmark:main"
+lp-retry-failed-docs = "liteparse_eval.failed_doc_retry:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -197,6 +197,8 @@ struct PyLiteParseConfig {
     #[pyo3(get)]
     ocr_server_url: Option<String>,
     #[pyo3(get)]
+    ocr_timeout_ms: u64,
+    #[pyo3(get)]
     tessdata_path: Option<String>,
     #[pyo3(get)]
     max_pages: usize,
@@ -232,6 +234,7 @@ impl PyLiteParseConfig {
             ocr_language: cfg.ocr_language.clone(),
             ocr_enabled: cfg.ocr_enabled,
             ocr_server_url: cfg.ocr_server_url.clone(),
+            ocr_timeout_ms: cfg.ocr_timeout_ms,
             tessdata_path: cfg.tessdata_path.clone(),
             max_pages: cfg.max_pages,
             target_pages: cfg.target_pages.clone(),
@@ -267,6 +270,7 @@ impl LiteParse {
         ocr_language = None,
         ocr_enabled = None,
         ocr_server_url = None,
+        ocr_timeout_ms = None,
         tessdata_path = None,
         max_pages = None,
         target_pages = None,
@@ -281,6 +285,7 @@ impl LiteParse {
         ocr_language: Option<String>,
         ocr_enabled: Option<bool>,
         ocr_server_url: Option<String>,
+        ocr_timeout_ms: Option<u64>,
         tessdata_path: Option<String>,
         max_pages: Option<usize>,
         target_pages: Option<String>,
@@ -300,6 +305,9 @@ impl LiteParse {
         }
         if let Some(v) = ocr_server_url {
             cfg.ocr_server_url = Some(v);
+        }
+        if let Some(v) = ocr_timeout_ms {
+            cfg.ocr_timeout_ms = v;
         }
         if let Some(v) = tessdata_path {
             cfg.tessdata_path = Some(v);

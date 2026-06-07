@@ -1,3 +1,5 @@
+import os
+
 from anthropic import Anthropic
 
 from .base import LLMProvider, QA_PROMPT, JUDGE_PROMPT
@@ -8,16 +10,29 @@ class AnthropicProvider(LLMProvider):
     LLM provider using Anthropic for QA.
     """
 
-    def __init__(self, api_key: str = None, model: str = "claude-sonnet-4-5-20250929"):
+    def __init__(
+        self,
+        api_key: str = None,
+        model: str = "claude-sonnet-4-5-20250929",
+        base_url: str = None,
+    ):
         """
         Initialize Anthropic QA provider.
 
         Args:
             api_key: Anthropic API key (or use ANTHROPIC_API_KEY env var)
             model: Claude model to use
+            base_url: Anthropic-compatible API base URL
         """
 
-        self.client = Anthropic(api_key=api_key, max_retries=100, timeout=10000)
+        resolved_api_key = api_key or os.getenv("ANTHROPIC_API_KEY") or os.getenv("PIPELLM_API_KEY")
+        resolved_base_url = base_url or os.getenv("ANTHROPIC_BASE_URL")
+        self.client = Anthropic(
+            api_key=resolved_api_key,
+            base_url=resolved_base_url,
+            max_retries=100,
+            timeout=10000,
+        )
         self.model = model
 
     def answer_question(self, ocr_text: str, question: str) -> str:

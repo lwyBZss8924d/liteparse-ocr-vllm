@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pypdf
-
 from .base import ParserProvider
 
 
@@ -23,6 +21,8 @@ class PyPDFProvider(ParserProvider):
 
     def extract_text(self, file_path: Path) -> str:
         """Extract text from a document using PyPDF."""
+        import pypdf
+
         result = pypdf.PdfReader(str(file_path), **self.config)
         text = "\n\n".join(page.extract_text() for page in result.pages)
         return text

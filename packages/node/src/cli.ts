@@ -4,11 +4,14 @@ import { program } from "commander";
 import { LiteParse, type LiteParseConfig } from "./lib.js";
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from "node:fs";
 import { join, relative, parse as parsePath } from "node:path";
+import { registerCodexOcrCommands } from "./codex-ocr/cli.js";
 
 program
   .name("liteparse")
   .description("Fast, lightweight PDF and document parsing")
-  .version("2.0.0");
+  .version("2.0.6-custom.0");
+
+registerCodexOcrCommands(program);
 
 program
   .command("parse")
@@ -17,6 +20,7 @@ program
   .option("-o, --output <file>", "Output file path")
   .option("--format <format>", 'Output format: json|text (default: "text")')
   .option("--ocr-server-url <url>", "HTTP OCR server URL")
+  .option("--ocr-timeout-ms <n>", "HTTP OCR request timeout in milliseconds", parseInt)
   .option("--no-ocr", "Disable OCR")
   .option("--ocr-language <lang>", "OCR language (default: eng)")
   .option("--max-pages <n>", "Max pages to parse", parseInt)
@@ -46,6 +50,7 @@ program
       if (opts.format) config.outputFormat = opts.format as "json" | "text";
       if (opts.ocrServerUrl)
         config.ocrServerUrl = opts.ocrServerUrl as string;
+      if (opts.ocrTimeoutMs) config.ocrTimeoutMs = opts.ocrTimeoutMs as number;
       if (opts.ocr === false) config.ocrEnabled = false;
       if (opts.ocrLanguage) config.ocrLanguage = opts.ocrLanguage as string;
       if (opts.maxPages) config.maxPages = opts.maxPages as number;
@@ -164,6 +169,7 @@ program
   .option("--no-ocr", "Disable OCR")
   .option("--ocr-language <lang>", "OCR language (default: eng)")
   .option("--ocr-server-url <url>", "HTTP OCR server URL")
+  .option("--ocr-timeout-ms <n>", "HTTP OCR request timeout in milliseconds", parseInt)
   .option("--max-pages <n>", "Max pages to parse per file", parseInt)
   .option("--dpi <dpi>", "Rendering DPI", parseFloat)
   .option("--recursive", "Recursively search input directory")
@@ -185,6 +191,7 @@ program
         if (opts.ocrLanguage) config.ocrLanguage = opts.ocrLanguage as string;
         if (opts.ocrServerUrl)
           config.ocrServerUrl = opts.ocrServerUrl as string;
+        if (opts.ocrTimeoutMs) config.ocrTimeoutMs = opts.ocrTimeoutMs as number;
         if (opts.maxPages) config.maxPages = opts.maxPages as number;
         if (opts.dpi) config.dpi = opts.dpi as number;
         if (opts.password) config.password = opts.password as string;

@@ -1,7 +1,7 @@
 {
-  "name": "@llamaindex/liteparse",
-  "version": "2.0.6",
-  "description": "Fast, lightweight PDF and document parsing with spatial text extraction",
+  "name": "@zzwz/liteparse-vllm",
+  "version": "2.0.6-custom.0",
+  "description": "LiteParse V2 with a custom Codex SDK OCR server",
   "type": "module",
   "main": "./dist/lib.js",
   "types": "./dist/lib.d.ts",
@@ -43,24 +43,21 @@
     "build:pdfium": "bash scripts/copy-pdfium.sh .",
     "build:ts": "tsc",
     "build": "npm run build:rs && npm run build:pdfium && npm run build:ts",
+    "test:codex-ocr": "npm run build:ts && node --test test/codex-ocr/*.test.mjs",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "commander": "^12.0.0"
+    "@openai/codex-sdk": "0.137.0",
+    "busboy": "^1.6.0",
+    "commander": "^12.0.0",
+    "sharp": "^0.34.5",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@napi-rs/cli": "^2.18.4",
+    "@types/busboy": "^1.5.4",
     "@types/node": "^22.0.0",
     "typescript": "~5.9.2"
-  },
-  "optionalDependencies": {
-    "@llamaindex/liteparse-darwin-arm64": "2.0.6",
-    "@llamaindex/liteparse-darwin-x64": "2.0.6",
-    "@llamaindex/liteparse-linux-arm64-gnu": "2.0.6",
-    "@llamaindex/liteparse-linux-x64-gnu": "2.0.6",
-    "@llamaindex/liteparse-win32-arm64-msvc": "2.0.6",
-    "@llamaindex/liteparse-win32-x64-msvc": "2.0.6",
-    "@llamaindex/liteparse-linux-x64-musl": "2.0.6"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -75,8 +72,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/run-llama/liteparse.git"
+    "url": "git+https://github.com/lwyBZss8924d/liteparse-ocr-vllm.git"
   },
+  "bugs": {
+    "url": "https://github.com/lwyBZss8924d/liteparse-ocr-vllm/issues"
+  },
+  "homepage": "https://github.com/lwyBZss8924d/liteparse-ocr-vllm#readme",
   "author": "LlamaIndex",
   "license": "Apache-2.0"
 }

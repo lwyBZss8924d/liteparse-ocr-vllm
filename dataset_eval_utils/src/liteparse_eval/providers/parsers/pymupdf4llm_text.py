@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import pymupdf4llm
-
 from .base import ParserProvider
 
 
@@ -18,4 +16,6 @@ class PyMuPDF4LLMTextProvider(ParserProvider):
 
     def extract_text(self, file_path: Path) -> str:
         """Extract text from a document using pymupdf4llm (plain text)."""
+        import pymupdf4llm
+
         return pymupdf4llm.to_text(str(file_path), use_ocr=False)

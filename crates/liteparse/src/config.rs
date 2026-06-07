@@ -9,6 +9,8 @@ pub struct LiteParseConfig {
     pub ocr_enabled: bool,
     /// HTTP OCR server URL (uses Tesseract if not provided)
     pub ocr_server_url: Option<String>,
+    /// HTTP OCR request timeout in milliseconds.
+    pub ocr_timeout_ms: u64,
     /// Path to tessdata directory. Falls back to TESSDATA_PREFIX env var if not set.
     pub tessdata_path: Option<String>,
     /// Maximum number of pages to parse.
@@ -43,6 +45,7 @@ impl Default for LiteParseConfig {
             ocr_language: "eng".to_string(),
             ocr_enabled: true,
             ocr_server_url: None,
+            ocr_timeout_ms: 60_000,
             tessdata_path: None,
             max_pages: 1000,
             target_pages: None,
@@ -127,6 +130,7 @@ mod tests {
         let c = LiteParseConfig::default();
         assert_eq!(c.ocr_language, "eng");
         assert!(c.ocr_enabled);
+        assert_eq!(c.ocr_timeout_ms, 60_000);
         assert_eq!(c.max_pages, 1000);
         assert_eq!(c.dpi, 150.0);
         assert_eq!(c.output_format, OutputFormat::Json);

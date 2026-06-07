@@ -1,7 +1,5 @@
 from pathlib import Path
 
-from markitdown import MarkItDown
-
 from .base import ParserProvider
 
 
@@ -19,6 +17,8 @@ class MarkItDownProvider(ParserProvider):
         Args:
             config: Configuration dict parameters for MarkItDown
         """
+        from markitdown import MarkItDown
+
         self.config = config or {}
         self.markitdown = MarkItDown(**self.config)
 

@@ -1,8 +1,6 @@
 import tempfile
 from pathlib import Path
 
-import opendataloader_pdf
-
 from .base import ParserProvider
 
 
@@ -20,6 +18,8 @@ class OpenDataLoaderProvider(ParserProvider):
 
     def extract_text(self, file_path: Path) -> str:
         """Extract text from a document using OpenDataLoader PDF."""
+        import opendataloader_pdf
+
         with tempfile.TemporaryDirectory() as tmp_dir:
             opendataloader_pdf.convert(
                 input_path=[str(file_path)],

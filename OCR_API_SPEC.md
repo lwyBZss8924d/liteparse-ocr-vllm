@@ -22,6 +22,8 @@ POST /ocr
 |-------|------|----------|-------------|
 | `file` | binary | Yes | Image file (PNG, JPG, etc.) |
 | `language` | string | No | Language code (default: `en`) |
+| `page_number` | integer | No | Page number metadata for OCR servers that preserve page context |
+| `strict_bboxes` | boolean string | No | Optional server-specific hint to drop OCR regions without usable bounding boxes |
 
 ### Language Codes
 
@@ -64,6 +66,8 @@ Your server should map these to whatever format your underlying OCR engine expec
 | `results[].text` | string | Recognized text content |
 | `results[].bbox` | [number, number, number, number] | Bounding box `[x1, y1, x2, y2]` where (x1,y1) is top-left and (x2,y2) is bottom-right |
 | `results[].confidence` | number | Confidence score between 0.0 and 1.0 |
+
+Servers may include extra top-level metadata such as `engine`, `model`, or `warnings`; LiteParse clients must continue to rely on the baseline `results[]` contract.
 
 ## Example
 
@@ -145,6 +149,26 @@ See the `/ocr` directory for reference implementations:
 
 - `ocr/easyocr/` - Wrapper for EasyOCR
 - `ocr/paddleocr/` - Wrapper for PaddleOCR
+
+The custom V2 Node package also includes a Codex SDK OCR server:
+
+```bash
+cd packages/node
+node dist/cli.js codex-ocr-server \
+  --host 127.0.0.1 \
+  --port 8833 \
+  --codex-home "$HOME/.codex-test"
+```
+
+It exposes:
+
+- `GET /health` with readiness, package version, backend `sdk`, model, reasoning effort, resolved `codex_home`, and boolean auth/config readability.
+- `POST /ocr` with the baseline LiteParse `results[]` response plus warning metadata.
+- `POST /ocr/analyze` with the full Codex OCR artifact.
+
+For this fork, `~/.codex-test/auth.json` and `~/.codex-test/config.toml` are the live-test auth/config files. Do not copy their contents into tracked files, package artifacts, or logs.
+
+Codex bounding boxes are model-inferred visual localization evidence. They are not deterministic layout-detector boxes, and successful responses include `codex_bboxes_are_model_inferred` in warning context.
 
 ## Testing Your Server
 

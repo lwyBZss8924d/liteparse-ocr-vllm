@@ -39,6 +39,8 @@ struct ParseCommand {
     #[arg(long, default_value = None)]
     ocr_server_url: Option<String>,
     #[arg(long)]
+    ocr_timeout_ms: Option<u64>,
+    #[arg(long)]
     tessdata_path: Option<String>,
     #[arg(long, default_value = "1000")]
     max_pages: usize,
@@ -83,6 +85,8 @@ struct BatchParseCommand {
     ocr_language: String,
     #[arg(long, default_value = None)]
     ocr_server_url: Option<String>,
+    #[arg(long)]
+    ocr_timeout_ms: Option<u64>,
     #[arg(long)]
     tessdata_path: Option<String>,
     #[arg(long, default_value = "1000")]
@@ -131,6 +135,9 @@ pub fn run_cli(args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
                 ocr_server_url: cmd.ocr_server_url,
                 ..Default::default()
             };
+            if let Some(timeout_ms) = cmd.ocr_timeout_ms {
+                config.ocr_timeout_ms = timeout_ms;
+            }
             if let Some(n) = cmd.num_workers {
                 config.num_workers = n;
             }
@@ -208,6 +215,9 @@ pub fn run_cli(args: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
                 ocr_server_url: cmd.ocr_server_url,
                 ..Default::default()
             };
+            if let Some(timeout_ms) = cmd.ocr_timeout_ms {
+                config.ocr_timeout_ms = timeout_ms;
+            }
             if let Some(n) = cmd.num_workers {
                 config.num_workers = n;
             }

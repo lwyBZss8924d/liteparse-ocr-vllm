@@ -58,6 +58,10 @@ Options:
 - `--output` — Path to save results (JSON + HTML report)
 - `--parse-provider` — Parser to evaluate: `liteparse`, `pymupdf`, `pypdf`, `markitdown` (default: `liteparse`)
 - `--llm-provider` — LLM for answering questions: `anthropic` (default: `anthropic`)
+- `--liteparse-cli-path` — Local LiteParse CLI command to evaluate instead of the Python wrapper
+- `--liteparse-ocr-server-url` — LiteParse-compatible OCR server URL
+- `--liteparse-ocr-timeout-ms` — HTTP OCR request timeout; use a larger value such as `300000` for slow remote/model OCR
+- `--liteparse-extract-retries` — Additional LiteParse CLI extraction retries for transient OCR/CLI failures
 
 Outputs:
 - `<output>.json` — Aggregate results with pass rates
@@ -77,6 +81,28 @@ Options:
 - `--runs` — Number of benchmark runs per provider (default: 10)
 - `--warmup` — Number of warmup runs (default: 1)
 - `--output` — Path to save JSON results
+
+### `lp-retry-failed-docs` — Retry Parse Failures With Evidence
+
+Retries documents that had `parse_latency_seconds: null` in an aggregate
+`lp-evaluate` JSON result. This is useful for slow or remote OCR backends where
+one full benchmark can hide transient CLI/OCR failures behind an aggregate score.
+
+```bash
+lp-retry-failed-docs \
+  --summary ./results/run1.json \
+  --output-dir ./results/run1_failed_doc_retry \
+  --liteparse-cli-path "node /path/to/liteparse/packages/node/dist/cli.js" \
+  --liteparse-ocr-server-url http://127.0.0.1:8833/ocr \
+  --liteparse-ocr-timeout-ms 300000 \
+  --attempts 2
+```
+
+Outputs:
+- `failed-doc-retry-summary.json` — Per-document retry status, durations, exit
+  codes, stdout/stderr tails, and links to full captured attempt output.
+- `<doc>.attempt<N>.stdout.json` — Full LiteParse JSON stdout for an attempt.
+- `<doc>.attempt<N>.stderr.txt` — Full LiteParse stderr for an attempt.
 
 ## Parser Providers
 

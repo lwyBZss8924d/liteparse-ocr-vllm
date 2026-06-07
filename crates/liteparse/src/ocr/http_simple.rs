@@ -30,13 +30,15 @@ pub struct HttpOcrResponse {
 pub struct HttpOcrEngine {
     pub name: String,
     server_url: String,
+    timeout_ms: u64,
 }
 
 impl HttpOcrEngine {
-    pub fn new(server_url: String) -> Self {
+    pub fn new(server_url: String, timeout_ms: u64) -> Self {
         Self {
             name: "http-ocr".to_string(),
             server_url,
+            timeout_ms,
         }
     }
 }
@@ -79,7 +81,7 @@ impl OcrEngine for HttpOcrEngine {
             let response: HttpOcrResponse = client
                 .post(&self.server_url)
                 .multipart(form)
-                .timeout(Duration::from_millis(60000))
+                .timeout(Duration::from_millis(self.timeout_ms))
                 .send()
                 .await?
                 .json()
@@ -106,9 +108,10 @@ mod tests {
 
     #[test]
     fn test_new_sets_name_and_url() {
-        let e = HttpOcrEngine::new("http://example.com/ocr".into());
+        let e = HttpOcrEngine::new("http://example.com/ocr".into(), 123_000);
         assert_eq!(e.name(), "http-ocr");
         assert_eq!(e.server_url, "http://example.com/ocr");
+        assert_eq!(e.timeout_ms, 123_000);
     }
 
     #[test]
@@ -130,7 +133,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_recognize_network_error() {
-        let e = HttpOcrEngine::new("http://127.0.0.1:1/ocr".into());
+        let e = HttpOcrEngine::new("http://127.0.0.1:1/ocr".into(), 60_000);
         let opts = OcrOptions {
             language: "eng".into(),
         };

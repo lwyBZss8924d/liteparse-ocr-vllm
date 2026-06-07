@@ -438,6 +438,80 @@ def main():
         default="anthropic",
         help="LLM provider to use. (default: anthropic)"
     )
+    parser.add_argument(
+        "--llm-model",
+        type=str,
+        default="claude-sonnet-4-5-20250929",
+        help="LLM model to use for answering questions"
+    )
+    parser.add_argument(
+        "--judge-model",
+        type=str,
+        default="claude-haiku-4-5-20251001",
+        help="LLM model to use for answer judging"
+    )
+    parser.add_argument(
+        "--anthropic-base-url",
+        type=str,
+        help="Anthropic-compatible API base URL"
+    )
+    parser.add_argument(
+        "--liteparse-ocr-server-url",
+        type=str,
+        help="LiteParse HTTP OCR server URL, e.g. http://127.0.0.1:8833/ocr"
+    )
+    parser.add_argument(
+        "--liteparse-ocr-language",
+        type=str,
+        default="en",
+        help="LiteParse OCR language code (default: en)"
+    )
+    parser.add_argument(
+        "--liteparse-dpi",
+        type=int,
+        default=150,
+        help="LiteParse render/OCR DPI (default: 150)"
+    )
+    parser.add_argument(
+        "--liteparse-ocr-timeout-ms",
+        type=int,
+        help="LiteParse HTTP OCR request timeout in milliseconds"
+    )
+    parser.add_argument(
+        "--liteparse-max-pages",
+        type=int,
+        default=1000,
+        help="LiteParse maximum pages (default: 1000)"
+    )
+    parser.add_argument(
+        "--liteparse-cli-path",
+        type=str,
+        help="Path to the liteparse/lit CLI executable"
+    )
+    parser.add_argument(
+        "--liteparse-preserve-small-text",
+        action="store_true",
+        help="Preserve very small text in LiteParse"
+    )
+    parser.add_argument(
+        "--liteparse-extract-retries",
+        type=int,
+        default=0,
+        help="Additional LiteParse CLI extraction retries after a failed attempt (default: 0)"
+    )
+    parser.add_argument(
+        "--liteparse-retry-delay-seconds",
+        type=float,
+        default=2.0,
+        help="Delay between LiteParse CLI extraction retries (default: 2.0)"
+    )
+    parser.add_argument(
+        "--liteparse-no-ocr",
+        dest="liteparse_ocr_enabled",
+        action="store_false",
+        default=True,
+        help="Disable LiteParse OCR"
+    )
 
     args = parser.parse_args()
 
@@ -454,16 +528,33 @@ def main():
     }
     if args.parse_provider not in provider_map:
         raise ValueError("Please specify a valid parser provider using --parse-provider")
-    parser_provider = provider_map[args.parse_provider]()
+    if args.parse_provider == "liteparse":
+        parser_provider = LiteparseProvider(
+            ocr_enabled=args.liteparse_ocr_enabled,
+            ocr_server_url=args.liteparse_ocr_server_url,
+            ocr_language=args.liteparse_ocr_language,
+            max_pages=args.liteparse_max_pages,
+            dpi=args.liteparse_dpi,
+            ocr_timeout_ms=args.liteparse_ocr_timeout_ms,
+            preserve_very_small_text=args.liteparse_preserve_small_text,
+            cli_path=args.liteparse_cli_path,
+            extract_retries=args.liteparse_extract_retries,
+            retry_delay_seconds=args.liteparse_retry_delay_seconds,
+        )
+    else:
+        parser_provider = provider_map[args.parse_provider]()
 
     # Initialize LLM provider
     if args.llm_provider == "anthropic":
-        llm_provider = AnthropicProvider()
+        llm_provider = AnthropicProvider(model=args.llm_model, base_url=args.anthropic_base_url)
     else:
         raise ValueError("Please specify a valid LLM provider using --llm-provider")
 
     # Use separate LLM judge provider
-    llm_judge_provider = AnthropicProvider(model="claude-haiku-4-5-20251001")
+    llm_judge_provider = AnthropicProvider(
+        model=args.judge_model,
+        base_url=args.anthropic_base_url,
+    )
 
     benchmark = Benchmark(
         parser_provider=parser_provider,

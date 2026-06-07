@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import fitz  # PyMuPDF
-
 from .base import ParserProvider
 
 
@@ -18,6 +16,8 @@ class PyMuPDFProvider(ParserProvider):
 
     def extract_text(self, file_path: Path) -> str:
         """Extract text from a document using PyMuPDF."""
+        import fitz  # PyMuPDF
+
         doc = fitz.open(str(file_path))
         text = "\n\n".join(page.get_text() for page in doc)
         return text

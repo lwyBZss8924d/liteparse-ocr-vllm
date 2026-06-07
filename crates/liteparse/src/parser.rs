@@ -148,7 +148,10 @@ impl LiteParse {
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     if let Some(ref url) = self.config.ocr_server_url {
-                        std::sync::Arc::new(HttpOcrEngine::new(url.clone()))
+                        std::sync::Arc::new(HttpOcrEngine::new(
+                            url.clone(),
+                            self.config.ocr_timeout_ms,
+                        ))
                     } else {
                         #[cfg(feature = "tesseract")]
                         {
